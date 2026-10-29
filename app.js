@@ -51,12 +51,19 @@ let state = {entries:{}, custom:[], kategorier:[], navne:{}};
 let docRef = null;
 let current = "bobler";
 let editing = false; // "Rediger" er slået til, og fanernes navne kan ændres
+let deleting = false; // "Slet" er slået til, og et tryk på en fane sletter kategorien
 const NY = "ny-kategori"; // fanen, hvor man opretter en ny kategori
 
 const $ = s => document.querySelector(s);
-// De faste kategoriers navne kan ændres; de nye navne gemmes i state.navne
-const allCats = () => CATS.map(c=>state.navne && state.navne[c.id] ? Object.assign({}, c, {label:state.navne[c.id]}) : c)
-  .concat(state.kategorier || []);
+// De faste kategoriers navne kan ændres; de nye navne gemmes i state.navne.
+// Slettede faste kategorier står i state.kategorier som {id, skjult:true}.
+const allCats = () => {
+  const k = state.kategorier || [];
+  const skjult = id => k.some(x=>x.id===id && x.skjult);
+  return CATS.filter(c=>!skjult(c.id))
+    .map(c=>state.navne && state.navne[c.id] ? Object.assign({}, c, {label:state.navne[c.id]}) : c)
+    .concat(k.filter(x=>!x.skjult));
+};
 // Faste drikke, der er fjernet, markeres med removed:true i entries (så Firestore-reglerne ikke skal ændres)
 const allItems = () => ITEMS.filter(i=>!entry(i.id).removed).concat(state.custom || []);
 const entry = id => (state.entries && state.entries[id]) || {};
@@ -131,7 +138,7 @@ function renderTabs(){
   const active = document.activeElement;
   if(editing && active && active.tagName==="INPUT" && nav.contains(active)) return; // don't wipe a name being typed
   nav.innerHTML = "";
-  if(!editing){
+  if(!editing && !deleting){
     const ny = document.createElement("button");
     ny.className = "tab ny"; ny.type = "button";
     ny.setAttribute("aria-pressed", current===NY);
@@ -154,6 +161,14 @@ function renderTabs(){
     const tried = items.filter(i=>entry(i.id).tried).length;
     const b = document.createElement("button");
     b.className = "tab"; b.type = "button";
+    if(deleting){
+      b.classList.add("slet");
+      b.textContent = "✕ " + c.label;
+      b.setAttribute("aria-label", "Slet kategorien "+c.label);
+      b.onclick = ()=>removeCat(c);
+      nav.append(b);
+      return;
+    }
     b.setAttribute("aria-pressed", c.id===current);
     b.innerHTML = "";
     b.append(c.label);
@@ -162,12 +177,22 @@ function renderTabs(){
     b.onclick = ()=>{ current = c.id; if(location.hash!=="#"+c.id) history.replaceState(null,"","#"+c.id); render(); };
     nav.append(b);
   });
-  const red = document.createElement("button");
-  red.className = "tab rediger"; red.type = "button";
-  red.setAttribute("aria-pressed", editing);
-  red.textContent = editing ? "Færdig" : "Rediger";
-  red.onclick = ()=>{ editing = !editing; render(); };
-  nav.append(red);
+  if(!deleting){
+    const red = document.createElement("button");
+    red.className = "tab rediger"; red.type = "button";
+    red.setAttribute("aria-pressed", editing);
+    red.textContent = editing ? "Færdig" : "Rediger";
+    red.onclick = ()=>{ editing = !editing; render(); };
+    nav.append(red);
+  }
+  if(!editing){
+    const sl = document.createElement("button");
+    sl.className = "tab rediger"; sl.type = "button";
+    sl.setAttribute("aria-pressed", deleting);
+    sl.textContent = deleting ? "Færdig" : "Slet";
+    sl.onclick = ()=>{ deleting = !deleting; render(); };
+    nav.append(sl);
+  }
 }
 
 function renderNewCat(main){
@@ -190,12 +215,16 @@ function renderNewCat(main){
 }
 
 function removeCat(c){
-  if(!confirm('Fjern kategorien "'+c.label+'" og alle drikke i den?')) return;
+  if(!confirm('Slet kategorien "'+c.label+'" og alle drikke i den?')) return;
   const ids = (state.custom||[]).filter(i=>i.cat===c.id).map(i=>i.id);
   state.custom = (state.custom||[]).filter(i=>i.cat!==c.id);
   ids.forEach(id=>{ delete state.entries[id]; });
-  state.kategorier = state.kategorier.filter(k=>k.id!==c.id);
-  current = CATS[0].id; history.replaceState(null,"","#"+current);
+  state.kategorier = (state.kategorier||[]).filter(k=>k.id!==c.id);
+  if(!c.custom) state.kategorier.push({id:c.id, skjult:true});
+  if(current===c.id || !allCats().some(x=>x.id===current)){
+    current = allCats().length ? allCats()[0].id : NY;
+    history.replaceState(null,"","#"+current);
+  }
   persist(); render();
 }
 
@@ -205,7 +234,8 @@ function renderList(){
   if(active && active.classList.contains("note")) return; // don't wipe a note being typed
   main.innerHTML = "";
   if(current===NY){ renderNewCat(main); return; }
-  const cat = allCats().find(c=>c.id===current) || CATS[0];
+  const cat = allCats().find(c=>c.id===current) || allCats()[0];
+  if(!cat){ current = NY; renderNewCat(main); return; }
   current = cat.id;
   const head = document.createElement("div"); head.className="cat-head";
   head.innerHTML = '<h2></h2><p></p>';
