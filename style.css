@@ -1,35 +1,79 @@
+/* Standard: grøn og vinrød */
 :root{
   --bg:#EEF3F1; --surface:#FFFFFF; --ink:#1E2A28; --muted:#5E6E6A; --line:#D5DFDC;
   --accent:#7A2E3B; --accent-soft:#F3E3E6; --gold:#B8902F; --pine:#2F5249; --pine-soft:#DCE9E5;
+  --menu-ink:#FFFFFF;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
     --bg:#121918; --surface:#1B2422; --ink:#E6EEEC; --muted:#9AABA6; --line:#2C3836;
     --accent:#E58C9A; --accent-soft:#3A2228; --gold:#E2C26A; --pine:#8CC2B3; --pine-soft:#20302C;
+    --menu-ink:#10201C;
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
   --bg:#121918; --surface:#1B2422; --ink:#E6EEEC; --muted:#9AABA6; --line:#2C3836;
   --accent:#E58C9A; --accent-soft:#3A2228; --gold:#E2C26A; --pine:#8CC2B3; --pine-soft:#20302C;
+  --menu-ink:#10201C;
   color-scheme:dark;
 }
+/* Witchy mode: lavendel, ametyst, dyb blomme og stearinlys-guld */
+:root[data-vibe="witchy"]{
+  --bg:#F2EEF8; --surface:#FDFBFF; --ink:#241A33; --muted:#6B5F7D; --line:#DDD3EA;
+  --accent:#7B3FA0; --accent-soft:#EFE4F7; --gold:#B8902F; --pine:#3B2756; --pine-soft:#ECE4F5;
+  --menu-ink:#F6F0FF; --glow:#E3D3F3;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root[data-vibe="witchy"]:not([data-theme="light"]){
+    --bg:#140F1E; --surface:#1E172B; --ink:#ECE6F5; --muted:#A699BA; --line:#342A47;
+    --accent:#C39BE6; --accent-soft:#33264A; --gold:#E2C26A; --pine:#B99BE3; --pine-soft:#2A2140;
+    --menu-ink:#1A1226; --glow:#2B1F40;
+    color-scheme:dark;
+  }
+}
+:root[data-vibe="witchy"][data-theme="dark"]{
+  --bg:#140F1E; --surface:#1E172B; --ink:#ECE6F5; --muted:#A699BA; --line:#342A47;
+  --accent:#C39BE6; --accent-soft:#33264A; --gold:#E2C26A; --pine:#B99BE3; --pine-soft:#2A2140;
+  --menu-ink:#1A1226; --glow:#2B1F40;
+  color-scheme:dark;
+}
+/* Tekster, der findes i begge udgaver; kun den ene vises */
+:root[data-vibe="witchy"] .std, :root:not([data-vibe="witchy"]) .witch{display:none}
 :root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
+/* Witchy: et svagt måneskær øverst og et par små stjerner */
+:root[data-vibe="witchy"] body{
+  background:
+    radial-gradient(1.5px 1.5px at 12% 6%, var(--gold) 50%, transparent 51%),
+    radial-gradient(1px 1px at 78% 3%, var(--gold) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 90% 14%, var(--accent) 50%, transparent 51%),
+    radial-gradient(1px 1px at 34% 12%, var(--accent) 50%, transparent 51%),
+    radial-gradient(ellipse 90% 420px at 50% -60px, var(--glow), transparent 70%) no-repeat,
+    var(--bg);
+}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 .wrap{max-width:760px;margin:0 auto;padding:28px 18px 80px}
 h1{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:clamp(2rem,6vw,2.9rem);line-height:1.05;margin:0 0 10px;letter-spacing:-.01em}
+:root[data-vibe="witchy"] h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:clamp(2.3rem,7vw,3.3rem);line-height:1;margin:0 0 12px;letter-spacing:-.005em}
+h1 .nowrap{white-space:nowrap}
+.vibe{font:inherit;font-size:.82rem;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;margin:0 0 14px;cursor:pointer}
+.vibe:hover{color:var(--accent);border-color:var(--accent)}
+h1 .h1-emoji{font-size:.75em}
 .lede{color:var(--muted);margin:0 0 6px}
+.lede-end{display:inline-block;margin-top:6px;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:700;font-size:1.25em;color:var(--accent)}
 .sync{font-size:.82rem;color:var(--muted);margin:0 0 26px}
 
 /* Menu: the current winners */
-.menu{background:var(--pine);color:#fff;border-radius:18px;padding:20px 20px 8px;margin-bottom:26px}
-:root[data-theme="dark"] .menu{color:#10201C}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .menu{color:#10201C}}
+.menu{background:var(--pine);color:var(--menu-ink);border-radius:18px;padding:20px 20px 8px;margin-bottom:26px}
 .menu h2{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:1.45rem;margin:0 0 4px}
+:root[data-vibe="witchy"] .menu{box-shadow:0 10px 30px -14px color-mix(in srgb,var(--accent) 60%,transparent)}
+:root[data-vibe="witchy"] .menu h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:1.7rem;line-height:1.1}
+:root[data-vibe="witchy"] .menu h2::before{content:"✦ ";color:var(--gold)}
 .menu p.sub{margin:0 0 14px;opacity:.82;font-size:.92rem}
 .menu dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:0 16px}
 .menu dt,.menu dd{padding:9px 0;border-top:1px solid color-mix(in srgb,currentColor 22%,transparent);margin:0}
@@ -38,7 +82,8 @@ h1{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:clamp(2rem,6vw,2
 .menu dd.empty{opacity:.6;font-style:italic}
 .menu ol{margin:0;padding-left:1.3em}
 .menu li+li{margin-top:2px}
-.menu .score{margin-left:8px;white-space:nowrap;opacity:.8;font-size:.9em}
+.menu .score{margin-left:8px;white-space:nowrap;opacity:.85;font-size:.9em}
+.menu .score svg{width:1em;height:1em;vertical-align:-.15em;margin-right:2px}
 
 /* Sticky tabs */
 .tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0;margin:0 -18px;padding-left:18px;padding-right:18px;overflow-x:auto;display:flex;gap:8px;scrollbar-width:none}
@@ -60,6 +105,7 @@ h1{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:clamp(2rem,6vw,2
 
 .cat-head{margin:6px 0 12px}
 .cat-head h2{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:1.6rem;margin:0}
+:root[data-vibe="witchy"] .cat-head h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:1.9rem;line-height:1.1}
 .cat-head p{margin:2px 0 0;color:var(--muted);font-size:.92rem}
 
 .item{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
@@ -79,6 +125,7 @@ h1{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:clamp(2rem,6vw,2
 .heart{flex:1 1 0;min-width:0;border:0;background:none;padding:2px;cursor:pointer;color:var(--line);line-height:0;display:flex;justify-content:center}
 .heart svg{width:100%;max-width:40px;height:auto;aspect-ratio:1}
 .heart.on{color:var(--accent)}
+:root[data-vibe="witchy"] .heart.on svg{filter:drop-shadow(0 0 4px color-mix(in srgb,var(--accent) 45%,transparent))}
 .note{width:100%;margin-top:10px;font:inherit;font-size:.92rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;resize:vertical;min-height:40px}
 .del{border:0;background:none;color:var(--muted);font:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline;padding:0;margin-top:8px}
 .empty-state{color:var(--muted);padding:18px 4px}
