@@ -34,23 +34,20 @@ Koden fungerer som en nøgle: kun den, der har det fulde link med koden, kan se 
 3. Gå til **Settings → Pages**. Under "Branch" vælger du `main` og mappen `/ (root)`, og klikker **Save**.
 4. Efter et minut eller to står adressen øverst på samme side, f.eks. `https://ditbrugernavn.github.io/smagsproever/`.
 
-## Del 3: Jeres link
+## Del 3: Jeres kode
 
-Sæt koden på til sidst i adressen:
+Åbn adressen, f.eks. `https://ditbrugernavn.github.io/smagsproever/`, på begge telefoner. Første gang beder siden om jeres kode. Skriv den, så husker telefonen den.
 
-```
-https://ditbrugernavn.github.io/smagsproever/?kode=DIN-HEMMELIGE-KODE
-```
+Vil du slippe for at skrive den, kan du sende linket med koden til sidst én gang (`…/smagsproever/?kode=DIN-HEMMELIGE-KODE`). Siden gemmer koden og fjerner den fra adresselinjen.
 
-Send det fulde link til din kæreste. Åbn det på begge telefoner og vælg **Føj til hjemmeskærm** i browserens menu (Del-knappen i Safari, de tre prikker i Chrome). Så ligger den som en app.
+Vælg **Føj til hjemmeskærm** i browserens menu (Del-knappen i Safari, de tre prikker i Chrome). Så ligger den som en app.
 
 Står der "Synkroniseret mellem jeres telefoner" under overskriften, virker det.
 
 ## Hvis noget driller
 
 - **"Firebase er ikke sat op endnu"**: værdierne i `firebaseConfig` er ikke udfyldt, eller den nye fil er ikke uploadet til GitHub.
-- **"Linket mangler ?kode=…"**: du har åbnet adressen uden koden. Brug det fulde link.
-- **"Databasen afviste adgang"**: koden i linket er ikke præcis den samme som i reglerne. Store og små bogstaver tæller.
+- **"Forkert kode. Prøv igen."**: koden er ikke præcis den samme som i reglerne. Store og små bogstaver tæller.
 - **Ændringer på GitHub vises ikke**: GitHub Pages er nogle minutter om at opdatere. Genindlæs siden.
 
 Firebase er gratis i det omfang, I bruger det her. I kommer ikke i nærheden af grænserne.

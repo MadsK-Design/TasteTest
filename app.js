@@ -72,7 +72,7 @@ function persist(delay=0){
     pending = true;
     writing = writing.then(()=>setDoc(docRef, {entries:state.entries, custom:state.custom}))
       .then(()=>setSync("Gemt, og synkroniseret mellem jeres telefoner."))
-      .catch(e=>setSync(e && e.code==="permission-denied" ? "Databasen afviste gemningen. Tjek koden i linket og reglerne i Firebase." : "Kunne ikke gemme online lige nu. Gemt på denne enhed."))
+      .catch(e=>setSync(e && e.code==="permission-denied" ? "Databasen afviste gemningen. Tjek koden og reglerne i Firebase." : "Kunne ikke gemme online lige nu. Gemt på denne enhed."))
       .finally(()=>{pending=false;});
   }, delay);
 }
@@ -212,16 +212,33 @@ const h0 = location.hash.slice(1); if(CATS.some(c=>c.id===h0)) current = h0;
 render();
 setSync("Gemmes på denne enhed.");
 
-(()=>{
-  const kode = new URLSearchParams(location.search).get("kode");
-  if(firebaseConfig.apiKey === "INDSÆT-HER"){ setSync("Firebase er ikke sat op endnu. Gemmes kun på denne enhed."); return; }
-  if(!kode){ setSync("Linket mangler ?kode=… til sidst. Gemmes kun på denne enhed."); return; }
+// Koden skrives én gang og huskes på telefonen. Et gammelt link med ?kode=… virker stadig:
+// koden gemmes, og den fjernes fra adresselinjen.
+const KODE_KEY = "smagsproever-kode";
+function getKode(){ try{ return localStorage.getItem(KODE_KEY); }catch(e){ return null; } }
+function setKode(k){ try{ k ? localStorage.setItem(KODE_KEY, k) : localStorage.removeItem(KODE_KEY); }catch(e){} }
+
+function askKode(msg){
+  setSync(msg);
+  $("#kode-form").hidden = false;
+}
+$("#kode-form").onsubmit = ev=>{
+  ev.preventDefault();
+  const k = $("#kode-input").value.trim(); if(!k) return;
+  setKode(k);
+  $("#kode-form").hidden = true;
+  connect(k);
+};
+
+let db = null, unsubscribe = null;
+function connect(kode){
   try{
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    if(!db) db = getFirestore(initializeApp(firebaseConfig));
+    if(unsubscribe) unsubscribe();
+    setSync("Forbinder…");
     docRef = doc(db, "lister", kode);
     let first = true;
-    onSnapshot(docRef, snap=>{
+    unsubscribe = onSnapshot(docRef, snap=>{
       if(snap.exists()){
         const d = snap.data() || {};
         state = {entries: d.entries || {}, custom: d.custom || []};
@@ -232,8 +249,29 @@ setSync("Gemmes på denne enhed.");
       }
       if(first) setSync("Synkroniseret mellem jeres telefoner.");
       first = false;
-    }, err=>setSync(err && err.code==="permission-denied"
-        ? "Databasen afviste adgang. Tjek at koden i linket matcher reglerne i Firebase."
-        : "Mistede forbindelsen. Gemmes på denne enhed."));
-  }catch(e){ setSync("Kunne ikke forbinde til databasen. Gemmes på denne enhed."); }
+    }, err=>{
+      if(err && err.code==="permission-denied"){
+        docRef = null; setKode(null);
+        askKode("Forkert kode. Prøv igen.");
+      } else setSync("Mistede forbindelsen. Gemmes på denne enhed.");
+    });
+  }catch(e){
+    docRef = null; setKode(null);
+    askKode("Forkert kode. Prøv igen.");
+  }
+}
+
+(()=>{
+  if(firebaseConfig.apiKey === "INDSÆT-HER"){ setSync("Firebase er ikke sat op endnu. Gemmes kun på denne enhed."); return; }
+  const params = new URLSearchParams(location.search);
+  const fraLink = params.get("kode");
+  if(fraLink){
+    setKode(fraLink);
+    params.delete("kode");
+    const q = params.toString();
+    history.replaceState(null, "", location.pathname + (q ? "?" + q : "") + location.hash);
+  }
+  const kode = fraLink || getKode();
+  if(kode) connect(kode);
+  else askKode("Skriv jeres kode for at se jeres fælles liste.");
 })();

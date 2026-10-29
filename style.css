@@ -71,6 +71,8 @@ h1{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:clamp(2rem,6vw,2
 .empty-state{color:var(--muted);padding:18px 4px}
 
 .add{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.add[hidden]{display:none}
+.add.kode{margin:-14px 0 26px}
 .add input{flex:1 1 220px;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 .btn{font:inherit;font-weight:600;padding:10px 16px;border-radius:10px;border:0;background:var(--accent);color:var(--surface);cursor:pointer}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
