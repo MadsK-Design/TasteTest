@@ -9,7 +9,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gloock&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<script>
+  // Hent altid den nyeste style.css og app.js, så en opdatering ses med det samme
+  window.V = Date.now();
+  document.write('<link rel="stylesheet" href="style.css?v=' + V + '">');
+</script>
+<noscript><link rel="stylesheet" href="style.css"></noscript>
 </head>
 <body>
 <div class="wrap">
@@ -37,6 +42,6 @@
   <footer>Vælg pasteuriserede varianter, som stort set alt i supermarkedet er. Undgå kombucha og bryggede ginger beers, da de gæres.</footer>
 </div>
 
-<script type="module" src="app.js"></script>
+<script type="module">import("./app.js?v=" + window.V);</script>
 </body>
 </html>
