@@ -96,7 +96,29 @@ function update(id, patch, delay=0){
   persist(delay);
 }
 
-const heartSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.9 4.5 6.6 4.5c2.1 0 3.6 1.2 4.4 2.5.8-1.3 2.3-2.5 4.4-2.5 3.7 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg>';
+// Standard eller witchy mode. Valget huskes på enheden; index.html sætter data-vibe, før siden tegnes.
+const VIBE_KEY = "smagsproever-vibe";
+const isWitchy = () => document.documentElement.dataset.vibe === "witchy";
+const VIBES = {
+  std:   {btn:"Switch to witchy mode",   icon:"🥂", color:"#2F5249", unit:"hjerter"},
+  witchy:{btn:"Switch to standard mode", icon:"🔮", color:"#3B2756", unit:"eliksirer"}
+};
+function applyVibe(){
+  const v = VIBES[isWitchy() ? "witchy" : "std"];
+  $("#vibe").textContent = v.btn;
+  $("#favicon").href = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">'+v.icon+'</text></svg>';
+  document.querySelector('meta[name="theme-color"]').content = v.color;
+}
+$("#vibe").onclick = ()=>{
+  if(isWitchy()) delete document.documentElement.dataset.vibe; else document.documentElement.dataset.vibe = "witchy";
+  try{ localStorage.setItem(VIBE_KEY, isWitchy() ? "witchy" : "std"); }catch(e){}
+  applyVibe(); render();
+};
+
+const heartSvgStd = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.9 4.5 6.6 4.5c2.1 0 3.6 1.2 4.4 2.5.8-1.3 2.3-2.5 4.4-2.5 3.7 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg>';
+// En lille eliksirflaske med prop og to bobler (boblerne er huller i formen)
+const potionSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M9 1.5h6v2.2h-1v4.6a7 7 0 1 1-4 0V3.7H9z M9.3 15.2a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0-2.6 0z M13.4 18.2a.85.85 0 1 0 1.7 0a.85.85 0 1 0-1.7 0z"/></svg>';
+const heartSvg = () => isWitchy() ? potionSvg : heartSvgStd;
 const checkSvg = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M3 8.5l3.2 3L13 4.5"/></svg>';
 
 function renderMenu(){
@@ -110,7 +132,7 @@ function renderMenu(){
       const ol = document.createElement("ol");
       top.forEach(i=>{
         const li = document.createElement("li");
-        const s = document.createElement("span"); s.className = "score"; s.textContent = "♥ " + entry(i.id).rating;
+        const s = document.createElement("span"); s.className = "score"; s.innerHTML = heartSvg(); s.append(entry(i.id).rating);
         li.append(i.name, s);
         ol.append(li);
       });
@@ -278,8 +300,8 @@ function renderList(){
     for(let k=1;k<=10;k++){
       const hb = document.createElement("button");
       hb.type="button"; hb.className="heart"+((e.rating||0)>=k?" on":"");
-      hb.innerHTML = heartSvg;
-      hb.setAttribute("aria-label", k+" af 10 hjerter");
+      hb.innerHTML = heartSvg();
+      hb.setAttribute("aria-label", k+" af 10 "+VIBES[isWitchy() ? "witchy" : "std"].unit);
       hb.onclick = ()=>{ const r = e.rating===k ? 0 : k; update(i.id,{rating:r, tried:true}); render(); };
       rate.append(hb);
     }
@@ -367,6 +389,7 @@ window.addEventListener("hashchange", fromHash);
 
 loadLocal();
 const h0 = location.hash.slice(1); if(knownTab(h0)) current = h0;
+applyVibe();
 render();
 setSync("Gemmes på denne enhed.");
 
