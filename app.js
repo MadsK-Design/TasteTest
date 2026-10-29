@@ -47,18 +47,24 @@ const ITEMS = [
 ];
 
 const LS_KEY = "smagsproever-v1";
-let state = {entries:{}, custom:[]};
+let state = {entries:{}, custom:[], kategorier:[], navne:{}};
 let docRef = null;
 let current = "bobler";
+let editing = false; // "Rediger" er slået til, og fanernes navne kan ændres
+const NY = "ny-kategori"; // fanen, hvor man opretter en ny kategori
 
 const $ = s => document.querySelector(s);
-const allItems = () => ITEMS.concat(state.custom || []);
+// De faste kategoriers navne kan ændres; de nye navne gemmes i state.navne
+const allCats = () => CATS.map(c=>state.navne && state.navne[c.id] ? Object.assign({}, c, {label:state.navne[c.id]}) : c)
+  .concat(state.kategorier || []);
+// Faste drikke, der er fjernet, markeres med removed:true i entries (så Firestore-reglerne ikke skal ændres)
+const allItems = () => ITEMS.filter(i=>!entry(i.id).removed).concat(state.custom || []);
 const entry = id => (state.entries && state.entries[id]) || {};
 
 function setSync(t){ $("#sync").textContent = t; }
 
 function loadLocal(){
-  try{ const raw = localStorage.getItem(LS_KEY); if(raw) state = Object.assign({entries:{},custom:[]}, JSON.parse(raw)); }catch(e){}
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw) state = Object.assign({entries:{},custom:[],kategorier:[],navne:{}}, JSON.parse(raw)); }catch(e){}
 }
 function saveLocal(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
 
@@ -70,7 +76,7 @@ function persist(delay=0){
   timer = setTimeout(()=>{
     if(pending) return;
     pending = true;
-    writing = writing.then(()=>setDoc(docRef, {entries:state.entries, custom:state.custom}))
+    writing = writing.then(()=>setDoc(docRef, {entries:state.entries, custom:state.custom, kategorier:state.kategorier||[], navne:state.navne||{}}))
       .then(()=>setSync("Gemt, og synkroniseret mellem jeres telefoner."))
       .catch(e=>setSync(e && e.code==="permission-denied" ? "Databasen afviste gemningen. Tjek koden og reglerne i Firebase." : "Kunne ikke gemme online lige nu. Gemt på denne enhed."))
       .finally(()=>{pending=false;});
@@ -88,20 +94,62 @@ const checkSvg = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" 
 
 function renderMenu(){
   const dl = $("#menu"); dl.innerHTML = "";
-  CATS.forEach(c=>{
-    const best = allItems().filter(i=>i.cat===c.id && (entry(i.id).rating||0)>0)
-      .sort((a,b)=>(entry(b.id).rating||0)-(entry(a.id).rating||0))[0];
+  allCats().forEach(c=>{
+    const top = allItems().filter(i=>i.cat===c.id && (entry(i.id).rating||0)>0)
+      .sort((a,b)=>(entry(b.id).rating||0)-(entry(a.id).rating||0)).slice(0,3);
     const dt = document.createElement("dt"); dt.textContent = c.label;
     const dd = document.createElement("dd");
-    if(best){ dd.textContent = best.name + "  " + "♥".repeat(entry(best.id).rating); }
+    if(top.length){
+      const ol = document.createElement("ol");
+      top.forEach(i=>{
+        const li = document.createElement("li");
+        const s = document.createElement("span"); s.className = "score"; s.textContent = "♥ " + entry(i.id).rating;
+        li.append(i.name, s);
+        ol.append(li);
+      });
+      dd.append(ol);
+    }
     else { dd.textContent = "Ikke bedømt endnu"; dd.className = "empty"; }
     dl.append(dt, dd);
   });
 }
 
+function rename(c, label){
+  label = label.trim();
+  if(c.custom){
+    const k = state.kategorier.find(k=>k.id===c.id);
+    if(k && label) k.label = label;
+  } else {
+    state.navne = state.navne || {};
+    const orig = CATS.find(x=>x.id===c.id).label;
+    if(!label || label===orig) delete state.navne[c.id]; else state.navne[c.id] = label;
+  }
+}
+
 function renderTabs(){
-  const nav = $("#tabs"); nav.innerHTML = "";
-  CATS.forEach(c=>{
+  const nav = $("#tabs");
+  const active = document.activeElement;
+  if(editing && active && active.tagName==="INPUT" && nav.contains(active)) return; // don't wipe a name being typed
+  nav.innerHTML = "";
+  if(!editing){
+    const ny = document.createElement("button");
+    ny.className = "tab ny"; ny.type = "button";
+    ny.setAttribute("aria-pressed", current===NY);
+    ny.textContent = "+ Ny kategori";
+    ny.onclick = ()=>{ current = NY; history.replaceState(null,"","#"+NY); render(); $("#ny-navn").focus(); };
+    nav.append(ny);
+  }
+  allCats().forEach(c=>{
+    if(editing){
+      const inp = document.createElement("input");
+      inp.className = "tab edit"; inp.type = "text"; inp.value = c.label;
+      inp.size = Math.max(4, c.label.length + 1);
+      inp.setAttribute("aria-label", "Nyt navn til "+c.label);
+      inp.oninput = ()=>{ inp.size = Math.max(4, inp.value.length + 1); rename(c, inp.value); persist(800); renderMenu(); };
+      inp.onkeydown = e=>{ if(e.key==="Enter") inp.blur(); };
+      nav.append(inp);
+      return;
+    }
     const items = allItems().filter(i=>i.cat===c.id);
     const tried = items.filter(i=>entry(i.id).tried).length;
     const b = document.createElement("button");
@@ -114,6 +162,41 @@ function renderTabs(){
     b.onclick = ()=>{ current = c.id; if(location.hash!=="#"+c.id) history.replaceState(null,"","#"+c.id); render(); };
     nav.append(b);
   });
+  const red = document.createElement("button");
+  red.className = "tab rediger"; red.type = "button";
+  red.setAttribute("aria-pressed", editing);
+  red.textContent = editing ? "Færdig" : "Rediger";
+  red.onclick = ()=>{ editing = !editing; render(); };
+  nav.append(red);
+}
+
+function renderNewCat(main){
+  const head = document.createElement("div"); head.className="cat-head";
+  head.innerHTML = '<h2>Ny kategori</h2><p>F.eks. "Til kaffen" eller "Nytårsaften kl. 12"</p>';
+  main.append(head);
+  const form = document.createElement("form"); form.className="add stack";
+  form.innerHTML = '<input type="text" id="ny-navn" placeholder="Navn, f.eks. Til osten" aria-label="Navn på kategorien">'
+    + '<input type="text" id="ny-sub" placeholder="Beskrivelse (kan springes over)" aria-label="Kort beskrivelse">'
+    + '<button class="btn" type="submit">Opret kategori</button>';
+  form.onsubmit = ev=>{
+    ev.preventDefault();
+    const label = $("#ny-navn").value.trim(); if(!label) return;
+    const c = {id:"k"+Date.now().toString(36), label, sub:$("#ny-sub").value.trim(), custom:true};
+    state.kategorier = (state.kategorier||[]).concat(c);
+    current = c.id; history.replaceState(null,"","#"+c.id);
+    persist(); render();
+  };
+  main.append(form);
+}
+
+function removeCat(c){
+  if(!confirm('Fjern kategorien "'+c.label+'" og alle drikke i den?')) return;
+  const ids = (state.custom||[]).filter(i=>i.cat===c.id).map(i=>i.id);
+  state.custom = (state.custom||[]).filter(i=>i.cat!==c.id);
+  ids.forEach(id=>{ delete state.entries[id]; });
+  state.kategorier = state.kategorier.filter(k=>k.id!==c.id);
+  current = CATS[0].id; history.replaceState(null,"","#"+current);
+  persist(); render();
 }
 
 function renderList(){
@@ -121,7 +204,9 @@ function renderList(){
   const active = document.activeElement;
   if(active && active.classList.contains("note")) return; // don't wipe a note being typed
   main.innerHTML = "";
-  const cat = CATS.find(c=>c.id===current);
+  if(current===NY){ renderNewCat(main); return; }
+  const cat = allCats().find(c=>c.id===current) || CATS[0];
+  current = cat.id;
   const head = document.createElement("div"); head.className="cat-head";
   head.innerHTML = '<h2></h2><p></p>';
   head.querySelector("h2").textContent = cat.label;
@@ -131,7 +216,7 @@ function renderList(){
   const onlyUntried = $("#f-untried").checked, onlyFav = $("#f-fav").checked;
   const items = allItems().filter(i=>i.cat===current)
     .filter(i=>!onlyUntried || !entry(i.id).tried)
-    .filter(i=>!onlyFav || (entry(i.id).rating||0)>=4);
+    .filter(i=>!onlyFav || (entry(i.id).rating||0)>=8);
 
   if(!items.length){
     const p = document.createElement("p"); p.className="empty-state";
@@ -160,15 +245,17 @@ function renderList(){
     const rate = document.createElement("div"); rate.className="rate";
     const lbl = document.createElement("span"); lbl.className="lbl"; lbl.textContent="Hendes dom";
     rate.append(lbl);
-    for(let k=1;k<=5;k++){
+    for(let k=1;k<=10;k++){
       const hb = document.createElement("button");
       hb.type="button"; hb.className="heart"+((e.rating||0)>=k?" on":"");
       hb.innerHTML = heartSvg;
-      hb.setAttribute("aria-label", k+" af 5 hjerter");
+      hb.setAttribute("aria-label", k+" af 10 hjerter");
       hb.onclick = ()=>{ const r = e.rating===k ? 0 : k; update(i.id,{rating:r, tried:true}); render(); };
       rate.append(hb);
     }
-    body.append(rate);
+    // Hjerter, noter og fjern-knap ligger under fluebenet og fylder hele kortets bredde
+    const foot = document.createElement("div"); foot.className="foot";
+    foot.append(rate);
 
     const note = document.createElement("textarea");
     note.className="note"; note.rows=1; note.placeholder="Noter: for sød, købt i Føtex, bedre kold…";
@@ -176,39 +263,80 @@ function renderList(){
     note.setAttribute("aria-label","Noter om "+i.name);
     note.oninput = ()=>{ update(i.id,{note:note.value}, 800); };
     note.onblur = ()=>{ renderMenu(); };
-    body.append(note);
+    foot.append(note);
 
-    if(i.custom){
-      const del = document.createElement("button"); del.className="del"; del.type="button";
-      del.textContent="Fjern fra listen";
-      del.onclick = ()=>{ state.custom = state.custom.filter(x=>x.id!==i.id); delete state.entries[i.id]; persist(); render(); };
-      body.append(del);
-    }
+    const del = document.createElement("button"); del.className="del"; del.type="button";
+    del.textContent="Fjern fra listen";
+    del.onclick = ()=>{
+      if(i.custom){ state.custom = state.custom.filter(x=>x.id!==i.id); delete state.entries[i.id]; }
+      else state.entries[i.id] = {removed:true};
+      persist(); render();
+    };
+    foot.append(del);
 
-    row.append(chk, body); card.append(row); main.append(card);
+    row.append(chk, body); card.append(row, foot); main.append(card);
   });
 
-  const add = document.createElement("form"); add.className="add";
-  add.innerHTML = '<input type="text" placeholder="Fandt du noget andet? Skriv navnet" aria-label="Navn på ny drik"><button class="btn" type="submit">Tilføj</button>';
+  const add = document.createElement("form"); add.className="add stack";
+  add.innerHTML = '<input type="text" name="navn" placeholder="Fandt du noget andet? Skriv navnet" aria-label="Navn på ny drik">'
+    + '<textarea name="how" rows="3" placeholder="Sådan: (kan springes over)" aria-label="Sådan laver man den"></textarea>'
+    + '<button class="btn" type="submit">Tilføj</button>';
   add.onsubmit = ev=>{
     ev.preventDefault();
-    const v = add.querySelector("input").value.trim(); if(!v) return;
-    state.custom = (state.custom||[]).concat({id:"c"+Date.now().toString(36), cat:current, name:v, custom:true});
+    const v = add.elements.navn.value.trim(); if(!v) return;
+    const how = add.elements.how.value.trim();
+    const item = {id:"c"+Date.now().toString(36), cat:current, name:v, custom:true};
+    if(how) item.how = how;
+    state.custom = (state.custom||[]).concat(item);
     persist(); render();
   };
   main.append(add);
+
+  const removed = ITEMS.filter(i=>i.cat===current && entry(i.id).removed);
+  if(removed.length){
+    const back = document.createElement("button"); back.className="del"; back.type="button";
+    back.textContent = "Vis fjernede igen ("+removed.length+")";
+    back.onclick = ()=>{ removed.forEach(i=>{ delete state.entries[i.id]; }); persist(); render(); };
+    main.append(back);
+  }
+
+  if(cat.custom){
+    const del = document.createElement("button"); del.className="del"; del.type="button";
+    del.textContent = "Fjern kategorien";
+    del.onclick = ()=>removeCat(cat);
+    main.append(del);
+  }
 }
 
 function render(){ renderTabs(); renderMenu(); renderList(); }
 
+// Træk i fanerne med musen. Et træk tæller ikke som et klik på en fane.
+(()=>{
+  const tabs = $("#tabs");
+  let drag = null, dragged = false;
+  tabs.addEventListener("pointerdown", e=>{
+    if(e.pointerType!=="mouse" || e.button!==0 || e.target.tagName==="INPUT") return;
+    drag = {x:e.clientX, left:tabs.scrollLeft}; dragged = false;
+  });
+  window.addEventListener("pointermove", e=>{
+    if(!drag) return;
+    const dx = e.clientX - drag.x;
+    if(!dragged && Math.abs(dx) > 5){ dragged = true; tabs.classList.add("dragging"); }
+    if(dragged) tabs.scrollLeft = drag.left - dx;
+  });
+  window.addEventListener("pointerup", ()=>{ drag = null; tabs.classList.remove("dragging"); });
+  tabs.addEventListener("click", e=>{ if(dragged){ e.stopPropagation(); e.preventDefault(); dragged = false; } }, true);
+})();
+
 $("#f-untried").onchange = renderList;
 $("#f-fav").onchange = renderList;
 
-function fromHash(){ const h = location.hash.slice(1); if(CATS.some(c=>c.id===h)){ current=h; render(); } }
+const knownTab = h => h===NY || allCats().some(c=>c.id===h);
+function fromHash(){ const h = location.hash.slice(1); if(knownTab(h)){ current=h; render(); } }
 window.addEventListener("hashchange", fromHash);
 
 loadLocal();
-const h0 = location.hash.slice(1); if(CATS.some(c=>c.id===h0)) current = h0;
+const h0 = location.hash.slice(1); if(knownTab(h0)) current = h0;
 render();
 setSync("Gemmes på denne enhed.");
 
@@ -241,7 +369,7 @@ function connect(kode){
     unsubscribe = onSnapshot(docRef, snap=>{
       if(snap.exists()){
         const d = snap.data() || {};
-        state = {entries: d.entries || {}, custom: d.custom || []};
+        state = {entries: d.entries || {}, custom: d.custom || [], kategorier: d.kategorier || [], navne: d.navne || {}};
         saveLocal();
         render();
       } else if(first && (Object.keys(state.entries||{}).length || (state.custom||[]).length)){
