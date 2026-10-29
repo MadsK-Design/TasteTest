@@ -19,7 +19,7 @@ service cloud.firestore {
     match /lister/{kode} {
       allow get: if kode == "DIN-HEMMELIGE-KODE";
       allow create, update: if kode == "DIN-HEMMELIGE-KODE"
-        && request.resource.data.keys().hasOnly(['entries', 'custom', 'kategorier']);
+        && request.resource.data.keys().hasOnly(['entries', 'custom', 'kategorier', 'navne']);
     }
   }
 }
