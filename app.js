@@ -273,7 +273,7 @@ function renderList(){
     if(i.how){ const hw=document.createElement("p"); hw.className="how"; hw.textContent="Sådan: "+i.how; body.append(hw); }
 
     const rate = document.createElement("div"); rate.className="rate";
-    const lbl = document.createElement("span"); lbl.className="lbl"; lbl.textContent="Hendes dom";
+    const lbl = document.createElement("span"); lbl.className="lbl"; lbl.textContent="Silkes vurdering";
     rate.append(lbl);
     for(let k=1;k<=10;k++){
       const hb = document.createElement("button");
