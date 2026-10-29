@@ -42,6 +42,8 @@ h1{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:clamp(2rem,6vw,2
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:600;font-size:.92rem;padding:8px 14px;border-radius:999px;cursor:pointer}
 .tab[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab.ny{border-style:dashed;color:var(--muted)}
+.tab.ny[aria-pressed="true"]{color:var(--bg)}
 .tab .n{font-weight:500;opacity:.65;margin-left:4px}
 .filters{display:flex;gap:16px;margin:8px 0 18px;font-size:.9rem;color:var(--muted)}
 .filters label{display:flex;gap:6px;align-items:center;cursor:pointer}
@@ -73,6 +75,9 @@ h1{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:clamp(2rem,6vw,2
 .add{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
 .add[hidden]{display:none}
 .add.kode{margin:-14px 0 26px}
+.add.stack{flex-direction:column;align-items:stretch;margin-top:4px}
+.add.stack input{flex:none}
+.add.stack .btn{align-self:flex-start}
 .add input{flex:1 1 220px;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
 .btn{font:inherit;font-weight:600;padding:10px 16px;border-radius:10px;border:0;background:var(--accent);color:var(--surface);cursor:pointer}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}

@@ -47,18 +47,20 @@ const ITEMS = [
 ];
 
 const LS_KEY = "smagsproever-v1";
-let state = {entries:{}, custom:[]};
+let state = {entries:{}, custom:[], kategorier:[]};
 let docRef = null;
 let current = "bobler";
+const NY = "ny-kategori"; // fanen, hvor man opretter en ny kategori
 
 const $ = s => document.querySelector(s);
+const allCats = () => CATS.concat(state.kategorier || []);
 const allItems = () => ITEMS.concat(state.custom || []);
 const entry = id => (state.entries && state.entries[id]) || {};
 
 function setSync(t){ $("#sync").textContent = t; }
 
 function loadLocal(){
-  try{ const raw = localStorage.getItem(LS_KEY); if(raw) state = Object.assign({entries:{},custom:[]}, JSON.parse(raw)); }catch(e){}
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw) state = Object.assign({entries:{},custom:[],kategorier:[]}, JSON.parse(raw)); }catch(e){}
 }
 function saveLocal(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
 
@@ -70,7 +72,7 @@ function persist(delay=0){
   timer = setTimeout(()=>{
     if(pending) return;
     pending = true;
-    writing = writing.then(()=>setDoc(docRef, {entries:state.entries, custom:state.custom}))
+    writing = writing.then(()=>setDoc(docRef, {entries:state.entries, custom:state.custom, kategorier:state.kategorier||[]}))
       .then(()=>setSync("Gemt, og synkroniseret mellem jeres telefoner."))
       .catch(e=>setSync(e && e.code==="permission-denied" ? "Databasen afviste gemningen. Tjek koden og reglerne i Firebase." : "Kunne ikke gemme online lige nu. Gemt på denne enhed."))
       .finally(()=>{pending=false;});
@@ -88,7 +90,7 @@ const checkSvg = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" 
 
 function renderMenu(){
   const dl = $("#menu"); dl.innerHTML = "";
-  CATS.forEach(c=>{
+  allCats().forEach(c=>{
     const best = allItems().filter(i=>i.cat===c.id && (entry(i.id).rating||0)>0)
       .sort((a,b)=>(entry(b.id).rating||0)-(entry(a.id).rating||0))[0];
     const dt = document.createElement("dt"); dt.textContent = c.label;
@@ -101,7 +103,7 @@ function renderMenu(){
 
 function renderTabs(){
   const nav = $("#tabs"); nav.innerHTML = "";
-  CATS.forEach(c=>{
+  allCats().forEach(c=>{
     const items = allItems().filter(i=>i.cat===c.id);
     const tried = items.filter(i=>entry(i.id).tried).length;
     const b = document.createElement("button");
@@ -114,6 +116,41 @@ function renderTabs(){
     b.onclick = ()=>{ current = c.id; if(location.hash!=="#"+c.id) history.replaceState(null,"","#"+c.id); render(); };
     nav.append(b);
   });
+  const ny = document.createElement("button");
+  ny.className = "tab ny"; ny.type = "button";
+  ny.setAttribute("aria-pressed", current===NY);
+  ny.textContent = "+ Ny kategori";
+  ny.onclick = ()=>{ current = NY; history.replaceState(null,"","#"+NY); render(); $("#ny-navn").focus(); };
+  nav.append(ny);
+}
+
+function renderNewCat(main){
+  const head = document.createElement("div"); head.className="cat-head";
+  head.innerHTML = '<h2>Ny kategori</h2><p>F.eks. "Til kaffen" eller "Nytårsaften kl. 12"</p>';
+  main.append(head);
+  const form = document.createElement("form"); form.className="add stack";
+  form.innerHTML = '<input type="text" id="ny-navn" placeholder="Navn, f.eks. Til osten" aria-label="Navn på kategorien">'
+    + '<input type="text" id="ny-sub" placeholder="Hvornår eller hvad i stedet for? (kan springes over)" aria-label="Kort beskrivelse">'
+    + '<button class="btn" type="submit">Opret kategori</button>';
+  form.onsubmit = ev=>{
+    ev.preventDefault();
+    const label = $("#ny-navn").value.trim(); if(!label) return;
+    const c = {id:"k"+Date.now().toString(36), label, sub:$("#ny-sub").value.trim(), custom:true};
+    state.kategorier = (state.kategorier||[]).concat(c);
+    current = c.id; history.replaceState(null,"","#"+c.id);
+    persist(); render();
+  };
+  main.append(form);
+}
+
+function removeCat(c){
+  if(!confirm('Fjern kategorien "'+c.label+'" og alle drikke i den?')) return;
+  const ids = (state.custom||[]).filter(i=>i.cat===c.id).map(i=>i.id);
+  state.custom = (state.custom||[]).filter(i=>i.cat!==c.id);
+  ids.forEach(id=>{ delete state.entries[id]; });
+  state.kategorier = state.kategorier.filter(k=>k.id!==c.id);
+  current = CATS[0].id; history.replaceState(null,"","#"+current);
+  persist(); render();
 }
 
 function renderList(){
@@ -121,7 +158,9 @@ function renderList(){
   const active = document.activeElement;
   if(active && active.classList.contains("note")) return; // don't wipe a note being typed
   main.innerHTML = "";
-  const cat = CATS.find(c=>c.id===current);
+  if(current===NY){ renderNewCat(main); return; }
+  const cat = allCats().find(c=>c.id===current) || CATS[0];
+  current = cat.id;
   const head = document.createElement("div"); head.className="cat-head";
   head.innerHTML = '<h2></h2><p></p>';
   head.querySelector("h2").textContent = cat.label;
@@ -197,6 +236,13 @@ function renderList(){
     persist(); render();
   };
   main.append(add);
+
+  if(cat.custom){
+    const del = document.createElement("button"); del.className="del"; del.type="button";
+    del.textContent = "Fjern kategorien";
+    del.onclick = ()=>removeCat(cat);
+    main.append(del);
+  }
 }
 
 function render(){ renderTabs(); renderMenu(); renderList(); }
@@ -204,11 +250,12 @@ function render(){ renderTabs(); renderMenu(); renderList(); }
 $("#f-untried").onchange = renderList;
 $("#f-fav").onchange = renderList;
 
-function fromHash(){ const h = location.hash.slice(1); if(CATS.some(c=>c.id===h)){ current=h; render(); } }
+const knownTab = h => h===NY || allCats().some(c=>c.id===h);
+function fromHash(){ const h = location.hash.slice(1); if(knownTab(h)){ current=h; render(); } }
 window.addEventListener("hashchange", fromHash);
 
 loadLocal();
-const h0 = location.hash.slice(1); if(CATS.some(c=>c.id===h0)) current = h0;
+const h0 = location.hash.slice(1); if(knownTab(h0)) current = h0;
 render();
 setSync("Gemmes på denne enhed.");
 
@@ -241,7 +288,7 @@ function connect(kode){
     unsubscribe = onSnapshot(docRef, snap=>{
       if(snap.exists()){
         const d = snap.data() || {};
-        state = {entries: d.entries || {}, custom: d.custom || []};
+        state = {entries: d.entries || {}, custom: d.custom || [], kategorier: d.kategorier || []};
         saveLocal();
         render();
       } else if(first && (Object.keys(state.entries||{}).length || (state.custom||[]).length)){

@@ -17,7 +17,9 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /lister/{kode} {
-      allow read, write: if kode == "DIN-HEMMELIGE-KODE";
+      allow get: if kode == "DIN-HEMMELIGE-KODE";
+      allow create, update: if kode == "DIN-HEMMELIGE-KODE"
+        && request.resource.data.keys().hasOnly(['entries', 'custom', 'kategorier']);
     }
   }
 }
