@@ -55,13 +55,15 @@ let deleting = false; // "Slet" er slået til, og et tryk på en fane sletter ka
 const NY = "ny-kategori"; // fanen, hvor man opretter en ny kategori
 
 const $ = s => document.querySelector(s);
-// De faste kategoriers navne kan ændres; de nye navne gemmes i state.navne.
+// De faste kategoriers navne kan ændres; de nye navne gemmes i state.navne[id],
+// og nye beskrivelser i state.navne["sub:"+id] (så Firestore-reglerne ikke skal ændres).
 // Slettede faste kategorier står i state.kategorier som {id, skjult:true}.
 const allCats = () => {
   const k = state.kategorier || [];
+  const n = state.navne || {};
   const skjult = id => k.some(x=>x.id===id && x.skjult);
   return CATS.filter(c=>!skjult(c.id))
-    .map(c=>state.navne && state.navne[c.id] ? Object.assign({}, c, {label:state.navne[c.id]}) : c)
+    .map(c=>Object.assign({}, c, n[c.id] ? {label:n[c.id]} : {}, ("sub:"+c.id) in n ? {sub:n["sub:"+c.id]} : {}))
     .concat(k.filter(x=>!x.skjult));
 };
 // Faste drikke, der er fjernet, markeres med removed:true i entries (så Firestore-reglerne ikke skal ændres)
@@ -169,6 +171,18 @@ function rename(c, label){
   }
 }
 
+function setSub(c, sub){
+  sub = sub.trim();
+  if(c.custom){
+    const k = state.kategorier.find(k=>k.id===c.id);
+    if(k) k.sub = sub;
+  } else {
+    state.navne = state.navne || {};
+    const orig = CATS.find(x=>x.id===c.id).sub;
+    if(sub===orig) delete state.navne["sub:"+c.id]; else state.navne["sub:"+c.id] = sub;
+  }
+}
+
 function renderTabs(){
   const nav = $("#tabs");
   const active = document.activeElement;
@@ -267,16 +281,27 @@ function removeCat(c){
 function renderList(){
   const main = $("#list");
   const active = document.activeElement;
-  if(active && active.classList.contains("note")) return; // don't wipe a note being typed
+  if(active && (active.classList.contains("note") || active.classList.contains("sub-edit"))) return; // don't wipe text being typed
   main.innerHTML = "";
   if(current===NY){ renderNewCat(main); return; }
   const cat = allCats().find(c=>c.id===current) || allCats()[0];
   if(!cat){ current = NY; renderNewCat(main); return; }
   current = cat.id;
   const head = document.createElement("div"); head.className="cat-head";
-  head.innerHTML = '<h2></h2><p></p>';
+  head.innerHTML = '<h2></h2>';
   head.querySelector("h2").textContent = cat.label;
-  head.querySelector("p").textContent = cat.sub;
+  if(editing){
+    // Under "Rediger" kan beskrivelsen af den kategori, man står på, rettes
+    const sub = document.createElement("textarea");
+    sub.className = "sub-edit"; sub.rows = 2; sub.value = cat.sub || "";
+    sub.placeholder = "Beskrivelse (kan være tom)";
+    sub.setAttribute("aria-label", "Beskrivelse af "+cat.label);
+    sub.oninput = ()=>{ setSub(cat, sub.value); persist(800); };
+    head.append(sub);
+  } else {
+    const p = document.createElement("p"); p.textContent = cat.sub || "";
+    head.append(p);
+  }
   main.append(head);
 
   const onlyUntried = $("#f-untried").checked, onlyFav = $("#f-fav").checked;
