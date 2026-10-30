@@ -123,6 +123,7 @@ h1 .h1-emoji{font-size:.75em}
 .heart svg{width:100%;max-width:40px;height:auto;aspect-ratio:1}
 .heart.on{color:var(--accent)}
 :root[data-vibe="witchy"] .heart.on svg{filter:drop-shadow(0 0 4px color-mix(in srgb,var(--accent) 45%,transparent))}
+.sub-edit{display:block;width:100%;margin-top:6px;font:inherit;font-size:.92rem;color:var(--ink);background:var(--surface);border:1px dashed var(--muted);border-radius:10px;padding:8px 10px;resize:vertical}
 .note{width:100%;margin-top:10px;font:inherit;font-size:.92rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;resize:vertical;min-height:40px}
 .del{border:0;background:none;color:var(--muted);font:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline;padding:0;margin-top:8px}
 .empty-state{color:var(--muted);padding:18px 4px}
