@@ -344,7 +344,7 @@ function renderList(){
     foot.append(rate);
 
     const note = document.createElement("textarea");
-    note.className="note"; note.rows=1; note.placeholder="Noter: for sød, købt i Føtex, bedre kold…";
+    note.className="note"; note.rows=1; note.placeholder="Skriv noter her";
     note.value = e.note || "";
     note.setAttribute("aria-label","Noter om "+i.name);
     note.oninput = ()=>{ update(i.id,{note:note.value}, 800); };
