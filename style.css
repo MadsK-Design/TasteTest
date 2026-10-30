@@ -61,7 +61,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 h1{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:clamp(2rem,6vw,2.9rem);line-height:1.05;margin:0 0 10px;letter-spacing:-.01em}
 :root[data-vibe="witchy"] h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:clamp(2.3rem,7vw,3.3rem);line-height:1;margin:0 0 12px;letter-spacing:-.005em}
 h1 .nowrap{white-space:nowrap}
-.vibe{font:inherit;font-size:.82rem;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;margin:0 0 14px;cursor:pointer}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 14px}
+.vibe{font:inherit;font-size:.82rem;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;margin:0;cursor:pointer}
 .vibe:hover{color:var(--accent);border-color:var(--accent)}
 h1 .h1-emoji{font-size:.75em}
 .lede{color:var(--muted);margin:0 0 6px}

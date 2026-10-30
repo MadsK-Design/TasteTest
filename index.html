@@ -14,13 +14,18 @@
   window.V = Date.now();
   // Witchy mode huskes på enheden og sættes før siden tegnes, så den ikke blinker
   try{ if(localStorage.getItem("smagsproever-vibe")==="witchy") document.documentElement.dataset.vibe = "witchy"; }catch(e){}
+  // Lys/mørk huskes på samme måde; uden et valg følger siden telefonens indstilling
+  try{ var t = localStorage.getItem("smagsproever-theme"); if(t==="light" || t==="dark") document.documentElement.dataset.theme = t; }catch(e){}
   document.write('<link rel="stylesheet" href="style.css?v=' + V + '">');
 </script>
 <noscript><link rel="stylesheet" href="style.css"></noscript>
 </head>
 <body>
 <div class="wrap">
-  <button class="vibe" id="vibe" type="button">Switch to witchy mode</button>
+  <div class="topbar">
+    <button class="vibe" id="vibe" type="button">Switch to witchy mode</button>
+    <button class="vibe" id="theme" type="button">Dark mode</button>
+  </div>
   <h1><span class="std">Smagsprøver til jul og nytår</span><span class="witch">The Journey of the right <span class="nowrap">brews <span class="h1-emoji" aria-hidden="true">⚗️</span></span></span></h1>
   <p class="lede std">Hej min elskede skat. Så er der en ny app 😘 Den her er lavet, så vi kan få overblik over, hvad du kan lide at drikke, og hvad vi evt. skal servere til jul og nytår eller andre skønne begivenheder.</p>
   <p class="lede witch">Welcome to Witch Mode. This is now your digital witch book, which will help you find the best brews to guide you through the journey of creating life.<br><span class="lede-end">– Let the journey begin!</span></p>
