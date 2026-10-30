@@ -112,10 +112,6 @@ h1 .h1-emoji{font-size:.75em}
 .item{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
 .item.tried{border-left:4px solid var(--pine)}
 .row{display:flex;gap:12px;align-items:flex-start}
-.check{flex:0 0 auto;width:26px;height:26px;margin-top:2px;border-radius:8px;border:2px solid var(--line);background:transparent;cursor:pointer;display:grid;place-items:center;color:var(--bg);padding:0}
-.check[aria-pressed="true"]{background:var(--pine);border-color:var(--pine)}
-.check svg{width:15px;height:15px;opacity:0}
-.check[aria-pressed="true"] svg{opacity:1}
 .body{flex:1;min-width:0}
 .name{font-weight:700;margin:0;font-size:1.02rem}
 .desc{margin:2px 0 0;color:var(--muted);font-size:.92rem}
