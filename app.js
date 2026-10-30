@@ -67,6 +67,8 @@ const allCats = () => {
 // Faste drikke, der er fjernet, markeres med removed:true i entries (så Firestore-reglerne ikke skal ændres)
 const allItems = () => ITEMS.filter(i=>!entry(i.id).removed).concat(state.custom || []);
 const entry = id => (state.entries && state.entries[id]) || {};
+// En drik tæller som smagt, når den har fået en vurdering
+const isTried = id => (entry(id).rating||0) > 0;
 
 function setSync(t){ $("#sync").textContent = t; }
 
@@ -132,7 +134,6 @@ const heartSvgStd = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="cur
 // En lille eliksirflaske med prop og to bobler (boblerne er huller i formen)
 const potionSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M9 1.5h6v2.2h-1v4.6a7 7 0 1 1-4 0V3.7H9z M9.3 15.2a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0-2.6 0z M13.4 18.2a.85.85 0 1 0 1.7 0a.85.85 0 1 0-1.7 0z"/></svg>';
 const heartSvg = () => isWitchy() ? potionSvg : heartSvgStd;
-const checkSvg = '<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M3 8.5l3.2 3L13 4.5"/></svg>';
 
 function renderMenu(){
   const dl = $("#menu"); dl.innerHTML = "";
@@ -193,7 +194,7 @@ function renderTabs(){
       return;
     }
     const items = allItems().filter(i=>i.cat===c.id);
-    const tried = items.filter(i=>entry(i.id).tried).length;
+    const tried = items.filter(i=>isTried(i.id)).length;
     const b = document.createElement("button");
     b.className = "tab"; b.type = "button";
     if(deleting){
@@ -280,7 +281,7 @@ function renderList(){
 
   const onlyUntried = $("#f-untried").checked, onlyFav = $("#f-fav").checked;
   const items = allItems().filter(i=>i.cat===current)
-    .filter(i=>!onlyUntried || !entry(i.id).tried)
+    .filter(i=>!onlyUntried || !isTried(i.id))
     .filter(i=>!onlyFav || (entry(i.id).rating||0)>=8);
 
   if(!items.length){
@@ -292,14 +293,8 @@ function renderList(){
   items.forEach(i=>{
     const e = entry(i.id);
     const card = document.createElement("article");
-    card.className = "item" + (e.tried?" tried":"");
+    card.className = "item" + (isTried(i.id)?" tried":"");
     const row = document.createElement("div"); row.className="row";
-
-    const chk = document.createElement("button");
-    chk.className="check"; chk.type="button"; chk.innerHTML = checkSvg;
-    chk.setAttribute("aria-pressed", !!e.tried);
-    chk.setAttribute("aria-label", (e.tried?"Markér som ikke smagt: ":"Markér som smagt: ")+i.name);
-    chk.onclick = ()=>{ update(i.id,{tried:!e.tried}); render(); };
 
     const body = document.createElement("div"); body.className="body";
     const h = document.createElement("p"); h.className="name"; h.textContent=i.name;
@@ -315,10 +310,11 @@ function renderList(){
       hb.type="button"; hb.className="heart"+((e.rating||0)>=k?" on":"");
       hb.innerHTML = heartSvg();
       hb.setAttribute("aria-label", k+" af 10 "+VIBES[isWitchy() ? "witchy" : "std"].unit);
-      hb.onclick = ()=>{ const r = e.rating===k ? 0 : k; update(i.id,{rating:r, tried:true}); render(); };
+      // Samme vurdering igen nulstiller, så drikken igen tæller som ikke smagt
+      hb.onclick = ()=>{ const r = e.rating===k ? 0 : k; update(i.id,{rating:r}); render(); };
       rate.append(hb);
     }
-    // Hjerter, noter og fjern-knap ligger under fluebenet og fylder hele kortets bredde
+    // Hjerter, noter og fjern-knap fylder hele kortets bredde
     const foot = document.createElement("div"); foot.className="foot";
     foot.append(rate);
 
@@ -339,7 +335,7 @@ function renderList(){
     };
     foot.append(del);
 
-    row.append(chk, body); card.append(row, foot); main.append(card);
+    row.append(body); card.append(row, foot); main.append(card);
   });
 
   const add = document.createElement("form"); add.className="add stack";
