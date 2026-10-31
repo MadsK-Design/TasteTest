@@ -257,3 +257,51 @@ footer{margin-top:40px;font-size:.85rem;color:var(--muted)}
 .bat .wing.l{transform-origin:50px 30px}
 @keyframes flap{from{scale:1 1}to{scale:1 -.25}}
 @media (prefers-reduced-motion:reduce){.welcome,.welcome-card,.welcome-moon{animation:none}}
+
+/* Flyt en drik til en anden kategori: knap nederst til venstre på et åbnet kort og en lille popup */
+.foot-acts{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px}
+.foot-acts .del{margin-top:0}
+.move-btn{font:inherit;font-size:.84rem;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:999px;padding:6px 13px;cursor:pointer}
+.move-btn[aria-expanded="true"]{background:var(--accent);color:var(--surface)}
+.move-pop{position:absolute;left:12px;z-index:20;min-width:210px;max-width:calc(100% - 24px);max-height:60vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;
+  box-shadow:0 14px 34px -10px rgba(0,0,0,.7);transform-origin:0 100%;animation:move-pop-in .18s ease-out}
+.move-pop.below{transform-origin:0 0}
+.move-pop.closing{animation:move-pop-out .16s ease-in forwards}
+.move-title{margin:2px 6px 8px;font-size:.8rem;color:var(--muted)}
+.move-none{margin:4px 6px;font-size:.9rem;color:var(--muted)}
+.move-opt{position:relative;display:block;width:100%;text-align:left;font:inherit;font-weight:600;font-size:.95rem;color:var(--ink);background:none;border:1px solid transparent;border-radius:10px;padding:9px 12px;cursor:pointer}
+.move-opt:hover{background:var(--pine-soft);border-color:var(--line)}
+.item.moving{pointer-events:none}
+.tab.landed{animation:landed .9s ease-out}
+@keyframes move-pop-in{from{opacity:0;transform:translateY(6px) scale(.96)}}
+@keyframes move-pop-out{to{opacity:0;transform:translateY(6px) scale(.96)}}
+@keyframes landed{0%,100%{box-shadow:0 0 0 0 transparent}35%{box-shadow:0 0 0 2px var(--accent),0 0 6px 0 color-mix(in srgb,var(--accent) 65%,transparent);transform:scale(1.06)}}
+/* Witchy: knappen er en lille gylden besværgelse, og popuppen åbner sig som en lysende cirkel fra knappen
+   med en langsomt drejende tryllecirkel i hjørnet (øverst, så den ikke giver en scrollbar). Kategorierne dukker op én efter én. */
+:root[data-vibe="witchy"] .move-btn{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.02rem;font-weight:700;color:var(--gold);background:color-mix(in srgb,var(--accent-soft) 80%,transparent);border-color:color-mix(in srgb,var(--gold) 45%,transparent);box-shadow:0 0 14px -5px color-mix(in srgb,var(--accent) 80%,transparent)}
+:root[data-vibe="witchy"] .move-btn[aria-expanded="true"]{color:var(--menu-ink);background:var(--gold);box-shadow:0 0 16px -2px color-mix(in srgb,var(--gold) 70%,transparent)}
+:root[data-vibe="witchy"] .move-pop{padding:12px 10px 10px;border-color:color-mix(in srgb,var(--accent) 55%,var(--line));
+  background:radial-gradient(circle at 0 100%,color-mix(in srgb,var(--accent) 24%,transparent),transparent 65%),var(--surface);
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--gold) 18%,transparent),0 16px 44px -12px color-mix(in srgb,var(--accent) 80%,transparent),0 0 60px -18px color-mix(in srgb,var(--gold) 45%,transparent);
+  animation:spell-open .55s cubic-bezier(.2,1,.3,1)}
+:root[data-vibe="witchy"] .move-pop.below{background:radial-gradient(circle at 0 0,color-mix(in srgb,var(--accent) 24%,transparent),transparent 65%),var(--surface);animation-name:spell-open-below}
+:root[data-vibe="witchy"] .move-pop.closing{animation:spell-close .2s ease-in forwards}
+:root[data-vibe="witchy"] .move-pop::before{content:"";position:absolute;left:-70px;top:-70px;width:150px;height:150px;border-radius:50%;pointer-events:none;
+  border:1px dashed color-mix(in srgb,var(--gold) 40%,transparent);box-shadow:inset 0 0 0 9px transparent,inset 0 0 0 10px color-mix(in srgb,var(--accent) 30%,transparent);animation:rune-spin 14s linear infinite}
+:root[data-vibe="witchy"] .move-title{position:relative;text-align:center;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:700;font-size:1.15rem;color:var(--accent);margin:0 6px 8px}
+:root[data-vibe="witchy"] .move-title::before{content:"✦ ";color:var(--gold);font-style:normal;font-size:.8em}
+:root[data-vibe="witchy"] .move-title::after{content:" ✦";color:var(--gold);font-style:normal;font-size:.8em}
+:root[data-vibe="witchy"] .move-opt{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:1.2rem;line-height:1.2;padding:8px 12px 8px 34px;animation:opt-appear .45s calc(.15s + var(--k,0)*.07s) cubic-bezier(.2,1,.3,1) both;transition:color .2s,background .2s,box-shadow .2s,border-color .2s}
+:root[data-vibe="witchy"] .move-opt::before{content:"✧";position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:.85rem;transition:transform .3s,color .2s}
+:root[data-vibe="witchy"] .move-opt:hover,:root[data-vibe="witchy"] .move-opt:active{color:var(--gold);background:color-mix(in srgb,var(--accent) 16%,transparent);border-color:color-mix(in srgb,var(--gold) 35%,transparent);box-shadow:0 0 14px -4px color-mix(in srgb,var(--accent) 80%,transparent)}
+:root[data-vibe="witchy"] .move-opt:hover::before,:root[data-vibe="witchy"] .move-opt:active::before{color:var(--gold);transform:translateY(-50%) rotate(180deg) scale(1.3)}
+:root[data-vibe="witchy"] .tab.landed{animation:landed-witchy 1.1s ease-out}
+.fx-vortex{border-radius:50%;background:conic-gradient(from 0deg,transparent 0 10%,color-mix(in srgb,var(--accent) 80%,transparent) 25%,transparent 42%,color-mix(in srgb,var(--gold) 65%,transparent) 60%,transparent 75%,color-mix(in srgb,var(--accent) 70%,transparent) 90%,transparent);
+  -webkit-mask:radial-gradient(circle,transparent 0 22%,#000 40%,#000 62%,transparent 71%);mask:radial-gradient(circle,transparent 0 22%,#000 40%,#000 62%,transparent 71%);filter:blur(1.5px)}
+@keyframes spell-open{from{clip-path:circle(0% at 0 100%);filter:brightness(2.2) blur(3px)}70%{filter:brightness(1.15) blur(0)}to{clip-path:circle(160% at 0 100%);filter:none}}
+@keyframes spell-open-below{from{clip-path:circle(0% at 0 0);filter:brightness(2.2) blur(3px)}70%{filter:brightness(1.15) blur(0)}to{clip-path:circle(160% at 0 0);filter:none}}
+@keyframes spell-close{to{opacity:0;transform:scale(.9);filter:blur(4px)}}
+@keyframes rune-spin{to{transform:rotate(360deg)}}
+@keyframes opt-appear{from{opacity:0;transform:translateX(-10px);filter:blur(4px)}}
+@keyframes landed-witchy{0%,100%{box-shadow:0 0 0 0 transparent}30%{transform:scale(1.08);box-shadow:0 0 0 2px var(--gold),0 0 8px 1px color-mix(in srgb,var(--accent) 80%,transparent)}60%{box-shadow:0 0 0 2px var(--accent),0 0 6px 0 color-mix(in srgb,var(--accent) 60%,transparent)}}
+@media (prefers-reduced-motion:reduce){.move-pop,.move-opt,.move-pop::before,.tab.landed{animation:none!important}}
