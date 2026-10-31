@@ -280,6 +280,7 @@ const EGG_SPEED = .75;    // px pr. ms; stjerneskuddets fart, når det suser for
 const EGG_START = .75;    // stjerneskuddet starter, når hjertet er så langt (0–1) i at samle sig
 const EGG_LAG = 80;       // px; så langt bag stjerneskuddets hoved teksten bliver skrevet
 const EGG_AFTER = 1500;   // ms; så længe hjertet og teksten bliver stående, når teksten er skrevet
+const EGG_FADE = 1800;    // ms; så langsomt stjernerne toner ud, når de er fløjet tilbage på plads
 // Hvor langt fra hjertets midte stjerneskuddet toner frem og forsvinder igen: højst 420 px.
 // På en smal skærm starter det lige uden for kanten, så det får et tilløb, og er tonet helt frem kort efter, det kommer ind.
 const eggReach = () => Math.min(420, innerWidth/2 + 60);
@@ -419,6 +420,10 @@ if($("#egg")) $("#egg").onclick = ()=>{
     dim.animate([{opacity:1}, {opacity:0}], {duration:1200, fill:"forwards"});
     extra.forEach(s=>s.animate([{opacity:1}, {opacity:0}], {duration:GATHER, fill:"forwards"}));
   }, HOLD);
+  // Når stjernerne er tilbage på plads, toner de langsomt ud i stedet for at forsvinde med ét.
+  // I witchy mode toner himlen bagefter lige så langsomt frem igen bag siden, som den plejer at være.
+  const back = HOLD + GATHER + 400;
+  const fade = reduce ? null : sky.animate([{opacity:1}, {opacity:0}], {duration:EGG_FADE, delay:back, easing:"ease-in-out", fill:"forwards"});
   setTimeout(()=>{
     moves.forEach(a=>{ try{ a.cancel(); }catch(_){} });
     order.forEach(s=>s.classList.remove("in-heart"));
@@ -426,8 +431,58 @@ if($("#egg")) $("#egg").onclick = ()=>{
     if(tempSky) tempSky.remove();
     text.remove(); dim.remove();
     root.classList.remove("easter");
-  }, HOLD + GATHER + 500);
+    if(fade && !tempSky){
+      const fadeIn = sky.animate([{opacity:0}, {opacity:1}], {duration:EGG_FADE, easing:"ease-in-out"});
+      fade.cancel();
+      setTimeout(()=>fadeIn.cancel(), EGG_FADE + 500); // sikkerhed: himlen må aldrig blive hængende usynlig
+    }
+  }, back + (reduce ? 0 : EGG_FADE));
 };
+
+// Et lille vink: der, hvor easter egget gemmer sig, glimter en stjerne kort.
+// Den glimter kun, når toppen af siden er i syne: et tilfældigt øjeblik kort efter, man er kommet op til toppen
+// (eller har åbnet siden), og så en gang imellem, så længe man bliver der.
+// Mens "Welcome back"-popuppen er fremme, venter den; den glimter kort efter, flagermusene er fløjet.
+const HINT_FIRST = [1000, 3000];  // ms efter man er kommet til toppen, før stjernen glimter
+const HINT_EVERY = [5000, 30000]; // ms mellem glimtene, mens man bliver i toppen
+const HINT_AFTER_BATS = [1000, 2000]; // ms efter flagermusene er væk, før stjernen glimter
+let hintSoon = ()=>{}; // kaldes, når "Welcome back" lukkes
+if($("#egg")){
+  const hint = document.createElement("span"); hint.className = "egg-hint"; hint.setAttribute("aria-hidden", "true"); hint.textContent = "✦";
+  $("#egg").after(hint);
+  const between = ([a, b]) => a + Math.random()*(b-a);
+  let timer = null;
+  const glint = ()=>{
+    if($(".welcome")){ timer = null; return; } // venter, til popuppen lukkes (se hintSoon)
+    const quiet = document.hidden || document.documentElement.classList.contains("easter") || matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(!quiet) hint.animate([
+      {opacity:0, transform:"scale(.2) rotate(-15deg)"},
+      {opacity:1, transform:"scale(1.15) rotate(10deg)", offset:.3},
+      {opacity:.55, transform:"scale(.8) rotate(20deg)", offset:.5},
+      {opacity:1, transform:"scale(1) rotate(30deg)", offset:.65},
+      {opacity:0, transform:"scale(.2) rotate(50deg)"}
+    ], {duration:1700, easing:"ease-in-out"});
+    timer = setTimeout(glint, between(HINT_EVERY));
+  };
+  // Hele hjørnet skal være i syne; ruller man væk, stopper glimtene, og de starter forfra, når man kommer op igen
+  let atTop = false;
+  const check = ()=>{
+    const r = $("#egg").getBoundingClientRect();
+    const now = r.top >= 0 && r.bottom <= innerHeight;
+    if(now === atTop) return;
+    atTop = now;
+    clearTimeout(timer); timer = null;
+    if(atTop) timer = setTimeout(glint, between(HINT_FIRST));
+  };
+  hintSoon = ms=>{
+    if(!atTop) return;
+    clearTimeout(timer);
+    timer = setTimeout(glint, ms + between(HINT_AFTER_BATS));
+  };
+  addEventListener("scroll", check, {passive:true});
+  addEventListener("resize", check);
+  check();
+}
 
 const heartSvgStd = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.9 4.5 6.6 4.5c2.1 0 3.6 1.2 4.4 2.5.8-1.3 2.3-2.5 4.4-2.5 3.7 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg>';
 // En lille eliksirflaske med prop og to bobler (boblerne er huller i formen)
@@ -1295,12 +1350,15 @@ function closeWelcome(ov){
   ov.classList.add("closing");
   const card = ov.querySelector(".welcome-card");
   const r = card.getBoundingClientRect();
-  if(!matchMedia("(prefers-reduced-motion: reduce)").matches) releaseBats(r.left + r.width/2, r.top + r.height/2);
+  const bats = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(bats) releaseBats(r.left + r.width/2, r.top + r.height/2);
   setTimeout(()=>ov.remove(), 380);
+  hintSoon(bats ? BATS_MS : 380); // easter egg-stjernen glimter lidt efter, flagermusene er væk
 }
 
 // Som i tegnefilm, når nogen går ind i en hule: kortet bliver til et mørkt hul, og en hel sværm
 // af sorte flagermus eksploderer ud af det på én gang, kommer imod en, flagrer i zigzag og er væk på lidt over et sekund.
+const BATS_MS = 1300; // ms; så længe flagermusene højst er om at flyve væk
 function releaseBats(cx, cy){
   const n = 34;
   const far = Math.hypot(innerWidth, innerHeight) * .75;
