@@ -441,14 +441,18 @@ if($("#egg")) $("#egg").onclick = ()=>{
 // Et lille vink: der, hvor easter egget gemmer sig, glimter en stjerne kort.
 // Den glimter kun, når toppen af siden er i syne: et tilfældigt øjeblik kort efter, man er kommet op til toppen
 // (eller har åbnet siden), og så en gang imellem, så længe man bliver der.
-const HINT_FIRST = [1500, 5000];  // ms efter man er kommet til toppen, før stjernen glimter
-const HINT_EVERY = [15000, 35000]; // ms mellem glimtene, mens man bliver i toppen
+// Mens "Welcome back"-popuppen er fremme, venter den; den glimter kort efter, flagermusene er fløjet.
+const HINT_FIRST = [2000, 4000];  // ms efter man er kommet til toppen, før stjernen glimter
+const HINT_EVERY = [5000, 30000]; // ms mellem glimtene, mens man bliver i toppen
+const HINT_AFTER_BATS = [1000, 2000]; // ms efter flagermusene er væk, før stjernen glimter
+let hintSoon = ()=>{}; // kaldes, når "Welcome back" lukkes
 if($("#egg")){
   const hint = document.createElement("span"); hint.className = "egg-hint"; hint.setAttribute("aria-hidden", "true"); hint.textContent = "✦";
   $("#egg").after(hint);
   const between = ([a, b]) => a + Math.random()*(b-a);
   let timer = null;
   const glint = ()=>{
+    if($(".welcome")){ timer = null; return; } // venter, til popuppen lukkes (se hintSoon)
     const quiet = document.hidden || document.documentElement.classList.contains("easter") || matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(!quiet) hint.animate([
       {opacity:0, transform:"scale(.2) rotate(-15deg)"},
@@ -468,6 +472,11 @@ if($("#egg")){
     atTop = now;
     clearTimeout(timer); timer = null;
     if(atTop) timer = setTimeout(glint, between(HINT_FIRST));
+  };
+  hintSoon = ms=>{
+    if(!atTop) return;
+    clearTimeout(timer);
+    timer = setTimeout(glint, ms + between(HINT_AFTER_BATS));
   };
   addEventListener("scroll", check, {passive:true});
   addEventListener("resize", check);
@@ -1201,12 +1210,15 @@ function closeWelcome(ov){
   ov.classList.add("closing");
   const card = ov.querySelector(".welcome-card");
   const r = card.getBoundingClientRect();
-  if(!matchMedia("(prefers-reduced-motion: reduce)").matches) releaseBats(r.left + r.width/2, r.top + r.height/2);
+  const bats = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(bats) releaseBats(r.left + r.width/2, r.top + r.height/2);
   setTimeout(()=>ov.remove(), 380);
+  hintSoon(bats ? BATS_MS : 380); // easter egg-stjernen glimter lidt efter, flagermusene er væk
 }
 
 // Som i tegnefilm, når nogen går ind i en hule: kortet bliver til et mørkt hul, og en hel sværm
 // af sorte flagermus eksploderer ud af det på én gang, kommer imod en, flagrer i zigzag og er væk på lidt over et sekund.
+const BATS_MS = 1300; // ms; så længe flagermusene højst er om at flyve væk
 function releaseBats(cx, cy){
   const n = 34;
   const far = Math.hypot(innerWidth, innerHeight) * .75;
