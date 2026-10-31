@@ -81,7 +81,9 @@ h1 .nowrap{white-space:nowrap}
 /* Under easter egget lægger stjernerne sig over siden, så hjertet kan ses */
 .egg-dim{position:fixed;inset:0;z-index:80;pointer-events:none;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 .easter .sky{z-index:81}
-.sky .star.in-heart{box-shadow:0 0 6px 2px var(--accent)}
+/* Stjernerne i hjertet blinker ikke: ellers lader Safari blinke-animationen tage over, når de er fløjet på plads,
+   så de hopper tilbage på himlen, og hjertet forsvinder */
+.sky .star.in-heart{animation:none;opacity:1;box-shadow:0 0 6px 2px var(--accent)}
 .sky .star.gold.in-heart{box-shadow:0 0 6px 2px var(--gold)}
 .egg-shoot{position:fixed;z-index:83;width:170px;height:3px;margin:-1.5px 0 0 -170px;border-radius:3px;pointer-events:none;transform-origin:right center;
   background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--gold) 80%,transparent) 65%,#fff);filter:drop-shadow(0 0 6px var(--gold))}
