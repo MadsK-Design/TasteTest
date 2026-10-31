@@ -127,8 +127,8 @@ function update(id, patch, delay=0){
 const VIBE_KEY = "smagsproever-vibe";
 const isWitchy = () => document.documentElement.dataset.vibe === "witchy";
 const VIBES = {
-  std:   {btn:"Switch to witchy mode",   icon:"🥂", color:"#2F5249", unit:"hjerter"},
-  witchy:{btn:"Switch to standard mode", icon:"🔮", color:"#3B2756", unit:"eliksirer"}
+  std:   {btn:"Switch to witchy mode",   icon:"🥂", color:"#121918", unit:"hjerter"},
+  witchy:{btn:"Switch to standard mode", icon:"🔮", color:"#140F1E", unit:"eliksirer"}
 };
 function applyVibe(){
   const v = VIBES[isWitchy() ? "witchy" : "std"];
@@ -142,49 +142,110 @@ function toggleVibe(){
   try{ localStorage.setItem(VIBE_KEY, isWitchy() ? "witchy" : "std"); }catch(e){}
   applyVibe(); render();
 }
+// 7. Fortryllelsen: en gennemsigtig, lysende bølge breder sig fra knappen, og alt, den passerer, bliver witchy.
+//    Siden forvandles inde i den voksende cirkel (View Transitions), mens kanten gløder lilla og drysser funkler.
+//    Tilbage til standard sker det modsatte: det heksede trækker sig sammen og forsvinder ind i knappen.
+const SPELL_MS = 1600; // så længe forvandlingen tager
 $("#vibe").onclick = ()=>{
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if(isWitchy() || reduce || $(".magic")) return toggleVibe();
-  // 7. En lilla trylle-bølge breder sig fra knappen, farver siden lilla og toner ud igen
+  if(reduce || $(".magic-ring")) return toggleVibe();
+  const out = isWitchy(); // true: fra witchy tilbage til standard
   const r = $("#vibe").getBoundingClientRect();
   const x = r.left + r.width/2, y = r.top + r.height/2;
-  const m = document.createElement("div"); m.className = "magic";
-  m.style.setProperty("--x", x + "px"); m.style.setProperty("--y", y + "px");
-  document.body.append(m);
-  m.animate([{clipPath:`circle(0px at ${x}px ${y}px)`}, {clipPath:`circle(${Math.hypot(innerWidth, innerHeight)}px at ${x}px ${y}px)`}],
-    {duration:520, easing:"cubic-bezier(.5,0,.3,1)", fill:"forwards"});
-  for(let k=0; k<16; k++){
-    const a = rnd(0, Math.PI*2), d = rnd(60, Math.max(innerWidth, innerHeight)*.6);
-    const s = particle("fx-dust fx-top", x, y, "✦");
-    s.style.fontSize = rnd(10, 20) + "px";
-    fly(s, [
-      {transform:"translate(-50%,-50%) scale(.3) rotate(0)", opacity:0},
-      {transform:`translate(calc(-50% + ${Math.cos(a)*d*.6}px),calc(-50% + ${Math.sin(a)*d*.6}px)) scale(1.2) rotate(120deg)`, opacity:1, offset:.5},
-      {transform:`translate(calc(-50% + ${Math.cos(a)*d}px),calc(-50% + ${Math.sin(a)*d}px)) scale(.4) rotate(240deg)`, opacity:0}
-    ], {duration:rnd(700, 1000), easing:"ease-out"});
+  const R = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y)); // til det fjerneste hjørne
+  const ease = "cubic-bezier(.45,.05,.35,1)";
+  const small = `circle(0px at ${x}px ${y}px)`, big = `circle(${R}px at ${x}px ${y}px)`;
+
+  if(document.startViewTransition){
+    // Ind i witchy: den nye side afsløres inde i en voksende cirkel.
+    // Ud af witchy: den gamle, heksede side ligger øverst og trækker sig sammen ind i knappen.
+    // Ring og funkler starter først, når browseren er klar, så de følger cirklens kant.
+    const root = document.documentElement;
+    root.classList.toggle("spell-out", out);
+    let switched = false;
+    const vt = document.startViewTransition(()=>{ switched = true; toggleVibe(); });
+    setTimeout(()=>{ if(!switched) vt.skipTransition(); }, 1500); // sikkerhed: skift alligevel, hvis browseren ikke kommer i gang
+    vt.finished.finally(()=>root.classList.remove("spell-out"));
+    vt.ready.then(()=>{
+      root.animate({clipPath: out ? [big, small] : [small, big]},
+        {duration:SPELL_MS, easing:ease, pseudoElement: out ? "::view-transition-old(root)" : "::view-transition-new(root)"});
+      spellFront(x, y, R, ease, out);
+    }).catch(()=>spellFront(x, y, R, ease, out));
+  } else {
+    // Reserve for ældre browsere: et gennemsigtigt lilla slør, og siden skifter, når bølgen er halvvejs
+    const m = document.createElement("div"); m.className = "magic";
+    m.style.setProperty("--x", x + "px"); m.style.setProperty("--y", y + "px");
+    document.body.append(m);
+    m.animate(out
+      ? [{clipPath:big, opacity:0}, {clipPath:big, opacity:.9, offset:.4}, {clipPath:small, opacity:1}]
+      : [{clipPath:small, opacity:1}, {clipPath:big, opacity:.9, offset:.6}, {clipPath:big, opacity:0}],
+      {duration:SPELL_MS, easing:ease, fill:"forwards"}).onfinish = ()=>m.remove();
+    setTimeout(toggleVibe, SPELL_MS*(out ? .55 : .45));
+    setTimeout(()=>m.remove(), SPELL_MS + 400);
+    spellFront(x, y, R, ease, out);
   }
-  setTimeout(()=>{
-    toggleVibe();
-    m.animate([{opacity:1}, {opacity:0}], {duration:420, easing:"ease-out", fill:"forwards"}).onfinish = ()=>m.remove();
-  }, 430);
-  setTimeout(()=>m.remove(), 1200); // sikkerhed, hvis animationen bliver sat på pause
 };
+
+function spellFront(x, y, R, ease, out){
+  // Bølgefronten: en lysende, gennemsigtig ring, der vokser med cirklen (eller skrumper ind mod knappen)
+  const ring = document.createElement("div"); ring.className = "magic-ring";
+  ring.style.left = x + "px"; ring.style.top = y + "px";
+  ring.style.width = ring.style.height = (R*2) + "px";
+  document.body.append(ring);
+  const grow = [
+    {transform:"translate(-50%,-50%) scale(0)", opacity:0},
+    {transform:"translate(-50%,-50%) scale(.08)", opacity:1, offset:.08},
+    {transform:"translate(-50%,-50%) scale(.85)", opacity:.9, offset:.8},
+    {transform:"translate(-50%,-50%) scale(1)", opacity:0}
+  ];
+  const shrink = [
+    {transform:"translate(-50%,-50%) scale(1)", opacity:0},
+    {transform:"translate(-50%,-50%) scale(.85)", opacity:.9, offset:.2},
+    {transform:"translate(-50%,-50%) scale(.08)", opacity:1, offset:.92},
+    {transform:"translate(-50%,-50%) scale(0)", opacity:0}
+  ];
+  ring.animate(out ? shrink : grow, {duration:SPELL_MS, easing:ease, fill:"forwards"}).onfinish = ()=>ring.remove();
+  setTimeout(()=>ring.remove(), SPELL_MS + 500);
+
+  // Funkler, der dukker op langs bølgefronten, mens den passerer, og blinker ud igen.
+  // På vej ud driver de ind mod knappen, som om magien bliver suget tilbage.
+  for(let k=0; k<34; k++){
+    const t = rnd(.05, .85); // hvor langt bølgen er nået
+    const reach = 1 - Math.pow(1 - t, 2.2); // følger nogenlunde ringens fart
+    const a = rnd(0, Math.PI*2), d = R * (out ? 1 - reach : reach);
+    const px = x + Math.cos(a)*d, py = y + Math.sin(a)*d;
+    if(px < -20 || py < -20 || px > innerWidth+20 || py > innerHeight+20) continue;
+    const s = particle("fx-dust fx-top", px, py, Math.random() < .7 ? "✦" : "✧");
+    s.style.fontSize = rnd(8, 18) + "px";
+    s.style.color = Math.random() < .5 ? "#E8D2FF" : "var(--gold)";
+    const drift = out ? -14 : 14;
+    fly(s, [
+      {transform:"translate(-50%,-50%) scale(0) rotate(0)", opacity:0},
+      {transform:"translate(-50%,-50%) scale(1.3) rotate(90deg)", opacity:1, offset:.3},
+      {transform:`translate(calc(-50% + ${Math.cos(a)*drift}px),calc(-50% + ${Math.sin(a)*drift - 10}px)) scale(0) rotate(200deg)`, opacity:0}
+    ], {duration:rnd(500, 800), delay:t*SPELL_MS, easing:"ease-out"});
+  }
+}
 
 // 6. Stjernehimmel bag hele siden: stjernerne blinker langsomt, og en gang imellem farer et stjerneskud forbi.
 //    Himlen ligger fast, mens man scroller, så den altid fylder hele skærmen.
 let shootTimer = null;
+function addStars(el, count){
+  const made = [];
+  for(let k=0; k<count; k++){
+    const s = document.createElement("span"); s.className = "star" + (Math.random() < .35 ? " gold" : "");
+    const z = rnd(1.2, 3);
+    s.style.cssText = `left:${rnd(2, 98)}%;top:${rnd(2, 95)}%;width:${z}px;height:${z}px;animation-duration:${rnd(2.4, 5.5)}s;animation-delay:${-rnd(0, 5)}s`;
+    el.append(s); made.push(s);
+  }
+  return made;
+}
 function applySky(){
   const sky = $(".sky");
   if(!isWitchy()){ if(sky) sky.remove(); clearTimeout(shootTimer); return; }
   if(sky) return;
   const el = document.createElement("div"); el.className = "sky"; el.setAttribute("aria-hidden", "true");
-  const count = Math.round(Math.min(70, Math.max(30, innerWidth*innerHeight/14000))); // flere stjerner på store skærme
-  for(let k=0; k<count; k++){
-    const s = document.createElement("span"); s.className = "star" + (Math.random() < .35 ? " gold" : "");
-    const z = rnd(1.2, 3);
-    s.style.cssText = `left:${rnd(2, 98)}%;top:${rnd(2, 95)}%;width:${z}px;height:${z}px;animation-duration:${rnd(2.4, 5.5)}s;animation-delay:${-rnd(0, 5)}s`;
-    el.append(s);
-  }
+  addStars(el, Math.round(Math.min(70, Math.max(30, innerWidth*innerHeight/14000)))); // flere stjerner på store skærme
   document.body.prepend(el);
   const shoot = (first)=>{
     shootTimer = setTimeout(()=>{
@@ -205,18 +266,167 @@ function applySky(){
   shoot(true);
 }
 
-// Lys/mørk. Uden et valg følger siden telefonens indstilling; index.html sætter data-theme, før siden tegnes.
-const THEME_KEY = "smagsproever-theme";
-const systemDark = matchMedia("(prefers-color-scheme: dark)");
-const isDark = () => document.documentElement.dataset.theme ? document.documentElement.dataset.theme === "dark" : systemDark.matches;
-function applyTheme(){ $("#theme").textContent = isDark() ? "Light mode" : "Dark mode"; }
-$("#theme").onclick = ()=>{
-  document.documentElement.dataset.theme = isDark() ? "light" : "dark";
-  try{ localStorage.setItem(THEME_KEY, document.documentElement.dataset.theme); }catch(e){}
-  applyTheme();
+// Siden er altid mørk; et gammelt lys/mørk-valg fra tidligere udgaver ryddes væk
+try{ localStorage.removeItem("smagsproever-theme"); }catch(e){}
+
+// ===== Easter egg 🤫 =====
+// En usynlig knap øverst til højre: stjernerne på himlen samler sig til et hjerte, et stjerneskud flyver ind i det,
+// og "I love you" toner frem. Bagefter flyver stjernerne tilbage, og alt er som før.
+// I standard mode, hvor der ingen stjernehimmel er, laves en midlertidig.
+// (Knappen kan mangle i en gammel, gemt index.html lige efter en opdatering; så springes det over i stedet for at fejle.)
+const EGG_STYLE = "pass"; // "pass" eller "hit" (se nedenfor)
+const EGG_SPEED = .75;    // px pr. ms; stjerneskuddets fart, når det suser forbi (hurtigt, som et rigtigt stjerneskud)
+const EGG_START = .75;    // stjerneskuddet starter, når hjertet er så langt (0–1) i at samle sig
+const EGG_LAG = 80;       // px; så langt bag stjerneskuddets hoved teksten bliver skrevet
+const EGG_AFTER = 1500;   // ms; så længe hjertet og teksten bliver stående, når teksten er skrevet
+// Hvor langt fra hjertets midte stjerneskuddet toner frem og forsvinder igen: højst 420 px.
+// På en smal skærm starter det lige uden for kanten, så det får et tilløb, og er tonet helt frem kort efter, det kommer ind.
+const eggReach = () => Math.min(420, innerWidth/2 + 60);
+const eggPassMs = () => 2*eggReach() / EGG_SPEED;
+
+// "pass": stjerneskuddet toner frem til venstre for hjertet, suser skråt gennem det og toner ud igen til højre,
+// og teksten bliver skrevet frem med en blød kant et stykke bag dets hale
+function eggPass(text, cx, cy, reduce){
+  text.style.transform = "translate(-50%,-50%)";
+  document.body.append(text);
+  const t = text.getBoundingClientRect();
+  const x0 = cx - eggReach(), x1 = cx + eggReach(), y0 = cy + 36, y1 = cy - 36; // svagt opadgående bane gennem hjertet
+  const span = x1 - x0, D = reduce ? 1 : eggPassMs();
+  const ang = Math.atan2(y1 - y0, x1 - x0) * 180 / Math.PI;
+  const at = x => [x, y0 + (y1 - y0) * (x - x0) / span]; // punktet på banen ved en given x
+  const when = x => (x - x0) / span * D;                  // hvornår hovedet er ved en given x
+
+  const shot = document.createElement("span"); shot.className = "egg-shoot";
+  shot.style.left = x0 + "px"; shot.style.top = y0 + "px";
+  document.body.append(shot);
+  const pos = f => `translate(${span*f}px,${(y1-y0)*f}px) rotate(${ang}deg)`;
+  shot.animate([
+    {transform:pos(0) + " scaleX(.2)", opacity:0},        // toner frem ud af ingenting, mens halen vokser
+    {transform:pos(.22) + " scaleX(1)", opacity:1, offset:.22},
+    {transform:pos(.8) + " scaleX(1)", opacity:1, offset:.8},
+    {transform:pos(1) + " scaleX(.6)", opacity:0}         // og toner ud igen
+  ], {duration:D, easing:"linear", fill:"forwards"}).onfinish = ()=>shot.remove();
+  setTimeout(()=>shot.remove(), D + 600);
+
+  // Teksten skrives frem med en blød, glidende kant (en maske), der følger efter halen i samme fart.
+  // Masken er 3 gange så bred som teksten; den bløde kant flytter sig 2 tekstbredder, fra lidt før teksten til lidt efter.
+  const W = t.width;
+  text.style.webkitMaskImage = text.style.maskImage = "linear-gradient(90deg,#000 0%,#000 42%,transparent 58%,transparent 100%)";
+  text.style.webkitMaskSize = text.style.maskSize = "300% 100%";
+  text.style.webkitMaskRepeat = text.style.maskRepeat = "no-repeat";
+  const edgeFrom = t.left - .5*W, startMs = when(edgeFrom + EGG_LAG), lenMs = 2*W / span * D;
+  text.animate([
+    {maskPosition:"100% 0", webkitMaskPosition:"100% 0"},
+    {maskPosition:"0% 0", webkitMaskPosition:"0% 0"}
+  ], {duration:reduce ? 1 : lenMs, delay:reduce ? 0 : startMs, easing:"linear", fill:"both"});
+  // Nyskrevet tekst gløder ekstra kraftigt og falder til ro (glød i stedet for et filter, som kan give en mørk firkant bag teksten)
+  const acc = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#C39BE6";
+  const glowOf = (a, b) => `0 0 ${a}px #fff, 0 0 ${b}px ${acc}, 0 0 ${b*2.4}px ${acc}`;
+  text.animate([{textShadow:glowOf(6, 18)}, {textShadow:glowOf(6, 18), offset:.5}, {textShadow:glowOf(2, 12)}],
+    {duration:reduce ? 1 : lenMs + 700, delay:reduce ? 0 : startMs, easing:"ease-out", fill:"both"});
+
+  // Halen drysser funkler, der langsomt daler og blinker ud (kun hvor stjerneskuddet er tydeligt)
+  if(!reduce) for(let k=0; k<20; k++){
+    const f = .15 + .7 * k / 19, [px, py] = at(x0 + span*f);
+    const p = particle("fx-dust fx-top egg-spark", px, py + rnd(-6, 6), Math.random() < .6 ? "✦" : "✧");
+    p.style.fontSize = rnd(7, 14) + "px";
+    p.style.color = Math.random() < .5 ? "#E8D2FF" : "var(--gold)";
+    fly(p, [
+      {transform:"translate(-50%,-50%) scale(0)", opacity:0},
+      {transform:"translate(-50%,-50%) scale(1.2)", opacity:1, offset:.2},
+      {transform:`translate(calc(-50% + ${rnd(-8, 8)}px),calc(-50% + ${rnd(12, 30)}px)) scale(.2)`, opacity:0}
+    ], {duration:rnd(700, 1100), delay:f*D, easing:"ease-out"});
+  }
+}
+
+if($("#egg")) $("#egg").onclick = ()=>{
+  const root = document.documentElement;
+  if(root.classList.contains("easter")) return;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  root.classList.add("easter");
+
+  const dim = document.createElement("div"); dim.className = "egg-dim"; document.body.append(dim);
+  let sky = $(".sky"), tempSky = null;
+  if(!sky){ tempSky = sky = document.createElement("div"); sky.className = "sky"; sky.setAttribute("aria-hidden", "true"); document.body.prepend(sky); addStars(sky, 40); }
+  let stars = [...sky.querySelectorAll(".star")];
+  const extra = stars.length < 48 ? addStars(sky, 48 - stars.length) : []; // nok stjerner til et tydeligt hjerte
+  stars = stars.concat(extra);
+  extra.forEach(s=>s.animate([{opacity:0}, {opacity:1}], {duration:500}));
+
+  // Hjertets kurve, centreret på skærmen
+  const cx = innerWidth/2, cy = innerHeight/2 - 10;
+  const u = Math.min(innerWidth, innerHeight) * .021; // 32 enheder bredt ≈ 2/3 af skærmen
+  const heart = t => [cx + u*16*Math.pow(Math.sin(t), 3), cy - u*(13*Math.cos(t) - 5*Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t))];
+  const order = stars.map((s, i)=>({s, r:Math.random()})).sort((a,b)=>a.r-b.r).map(x=>x.s); // hver stjerne får en tilfældig plads på hjertet
+  const GATHER = reduce ? 1 : 1700;
+  const moves = order.map((s, i)=>{
+    const b = s.getBoundingClientRect();
+    const [tx, ty] = heart(i / order.length * Math.PI * 2);
+    const dx = tx - (b.left + b.width/2), dy = ty - (b.top + b.height/2);
+    s.classList.add("in-heart");
+    return s.animate([
+      {transform:"translate(0,0) scale(1)", opacity:.6},
+      {transform:`translate(${dx}px,${dy}px) scale(2.2)`, opacity:1}
+    ], {duration:GATHER, delay:reduce ? 0 : rnd(0, 350), easing:"cubic-bezier(.6,.05,.25,1)", fill:"forwards"});
+  });
+  dim.animate([{opacity:0}, {opacity:1}], {duration:600, fill:"forwards"});
+
+  const text = document.createElement("div"); text.className = "egg-text"; text.textContent = "I love you";
+  text.style.left = cx + "px"; text.style.top = cy + "px";
+
+  // To varianter af stjerneskuddet (skift EGG_STYLE øverst ved easter egget):
+  //  "pass": stjerneskuddet suser forbi gennem hjertet, og halen skriver "I love you" efter sig
+  //  "hit":  stjerneskuddet flyver ind i hjertets midte, funkler, og teksten toner frem
+  if(EGG_STYLE === "pass") setTimeout(()=>eggPass(text, cx, cy, reduce), GATHER * EGG_START); // allerede mens hjertet bliver færdigt
+  else setTimeout(()=>{
+    const shot = document.createElement("span"); shot.className = "egg-shoot";
+    shot.style.left = cx + "px"; shot.style.top = cy + "px";
+    document.body.append(shot);
+    const fromX = -cx - 60, fromY = -cy*0.55;
+    const ang = Math.atan2(-fromY, -fromX) * 180 / Math.PI;
+    shot.animate([
+      {transform:`translate(${fromX}px,${fromY}px) rotate(${ang}deg) scaleX(.3)`, opacity:0},
+      {transform:`translate(${fromX*.6}px,${fromY*.6}px) rotate(${ang}deg) scaleX(1)`, opacity:1, offset:.3},
+      {transform:`translate(0,0) rotate(${ang}deg) scaleX(.2)`, opacity:1}
+    ], {duration:reduce ? 1 : 800, easing:"cubic-bezier(.5,0,.8,.6)", fill:"forwards"}).onfinish = ()=>shot.remove();
+    setTimeout(()=>shot.remove(), 1500);
+
+    setTimeout(()=>{
+      if(!reduce) for(let k=0; k<14; k++){
+        const a = rnd(0, Math.PI*2), d = rnd(30, 90);
+        const p = particle("fx-dust fx-top egg-spark", cx, cy, Math.random() < .7 ? "✦" : "✧");
+        p.style.fontSize = rnd(9, 18) + "px";
+        fly(p, [
+          {transform:"translate(-50%,-50%) scale(.2)", opacity:0},
+          {transform:`translate(calc(-50% + ${Math.cos(a)*d*.6}px),calc(-50% + ${Math.sin(a)*d*.6}px)) scale(1.2)`, opacity:1, offset:.35},
+          {transform:`translate(calc(-50% + ${Math.cos(a)*d}px),calc(-50% + ${Math.sin(a)*d}px)) scale(.3)`, opacity:0}
+        ], {duration:rnd(700, 1000), easing:"ease-out"});
+      }
+      document.body.append(text);
+      text.animate([
+        {transform:"translate(-50%,-50%) scale(.6)", opacity:0, filter:"blur(6px)"},
+        {transform:"translate(-50%,-50%) scale(1)", opacity:1, filter:"blur(0)"}
+      ], {duration:reduce ? 1 : 900, easing:"cubic-bezier(.2,1.2,.4,1)", fill:"forwards"});
+    }, reduce ? 0 : 780);
+  }, GATHER + 250);
+
+  // Efter et par sekunder: teksten toner ud, stjernerne flyver tilbage, og alt bliver normalt igen
+  const HOLD = EGG_STYLE === "pass" ? GATHER*EGG_START + eggPassMs() + 300 + EGG_AFTER : GATHER + 250 + 780 + 2400;
+  setTimeout(()=>{
+    text.animate([{opacity:1}, {opacity:0, transform:"translate(-50%,-50%) scale(1.08)"}], {duration:700, fill:"forwards"}).onfinish = ()=>text.remove();
+    moves.forEach(a=>{ try{ a.reverse(); }catch(_){} }); // stjernerne flyver samme vej tilbage
+    dim.animate([{opacity:1}, {opacity:0}], {duration:1200, fill:"forwards"});
+    extra.forEach(s=>s.animate([{opacity:1}, {opacity:0}], {duration:GATHER, fill:"forwards"}));
+  }, HOLD);
+  setTimeout(()=>{
+    moves.forEach(a=>{ try{ a.cancel(); }catch(_){} });
+    order.forEach(s=>s.classList.remove("in-heart"));
+    extra.forEach(s=>s.remove());
+    if(tempSky) tempSky.remove();
+    text.remove(); dim.remove();
+    root.classList.remove("easter");
+  }, HOLD + GATHER + 500);
 };
-systemDark.addEventListener("change", applyTheme);
-applyTheme();
 
 const heartSvgStd = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.9 4.5 6.6 4.5c2.1 0 3.6 1.2 4.4 2.5.8-1.3 2.3-2.5 4.4-2.5 3.7 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg>';
 // En lille eliksirflaske med prop og to bobler (boblerne er huller i formen)
