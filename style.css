@@ -23,21 +23,21 @@
 :root[data-vibe="witchy"]{
   --bg:#F2EEF8; --surface:#FDFBFF; --ink:#241A33; --muted:#6B5F7D; --line:#DDD3EA;
   --accent:#7B3FA0; --accent-soft:#EFE4F7; --gold:#B8902F; --pine:#3B2756; --pine-soft:#ECE4F5;
-  --menu-ink:#F6F0FF; --glow:#E3D3F3;
+  --menu-ink:#F6F0FF; --glow:#E3D3F3; --menu-gold:#D8B45A;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
   :root[data-vibe="witchy"]:not([data-theme="light"]){
     --bg:#140F1E; --surface:#1E172B; --ink:#ECE6F5; --muted:#A699BA; --line:#342A47;
     --accent:#C39BE6; --accent-soft:#33264A; --gold:#E2C26A; --pine:#B99BE3; --pine-soft:#2A2140;
-    --menu-ink:#1A1226; --glow:#2B1F40;
+    --menu-ink:#1A1226; --glow:#2B1F40; --menu-gold:#6A4A10;
     color-scheme:dark;
   }
 }
 :root[data-vibe="witchy"][data-theme="dark"]{
   --bg:#140F1E; --surface:#1E172B; --ink:#ECE6F5; --muted:#A699BA; --line:#342A47;
   --accent:#C39BE6; --accent-soft:#33264A; --gold:#E2C26A; --pine:#B99BE3; --pine-soft:#2A2140;
-  --menu-ink:#1A1226; --glow:#2B1F40;
+  --menu-ink:#1A1226; --glow:#2B1F40; --menu-gold:#6A4A10;
   color-scheme:dark;
 }
 /* Tekster, der findes i begge udgaver; kun den ene vises */
@@ -46,18 +46,52 @@
 html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
-/* Witchy: et svagt måneskær øverst og et par små stjerner */
+/* Witchy: et svagt måneskær øverst; stjernerne ligger i .sky, så de kan blinke */
 :root[data-vibe="witchy"] body{
   background:
-    radial-gradient(1.5px 1.5px at 12% 6%, var(--gold) 50%, transparent 51%),
-    radial-gradient(1px 1px at 78% 3%, var(--gold) 50%, transparent 51%),
-    radial-gradient(1.5px 1.5px at 90% 14%, var(--accent) 50%, transparent 51%),
-    radial-gradient(1px 1px at 34% 12%, var(--accent) 50%, transparent 51%),
     radial-gradient(ellipse 90% 420px at 50% -60px, var(--glow), transparent 70%) no-repeat,
     var(--bg);
 }
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-.wrap{max-width:760px;margin:0 auto;padding:28px 18px 80px}
+.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:28px 18px 80px}
+
+/* ===== Witchy-animationer ===== */
+/* 6. Stjernehimmel og stjerneskud */
+.sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.sky .star{position:absolute;border-radius:50%;background:var(--accent);box-shadow:0 0 4px var(--accent);animation:twinkle 4s ease-in-out infinite}
+.sky .star.gold{background:var(--gold);box-shadow:0 0 5px var(--gold)}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
+.sky .shooting{position:absolute;width:90px;height:2px;border-radius:2px;transform-origin:right center;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--gold) 80%,transparent) 70%,#fff);filter:drop-shadow(0 0 4px var(--gold))}
+/* Partikler: bobler, guldstøv og røg */
+.fx{position:fixed;z-index:65;pointer-events:none}
+.fx-top{z-index:75}
+.fx-bubble{border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 18%,color-mix(in srgb,var(--accent) 70%,transparent) 45%,transparent 72%);box-shadow:0 0 6px color-mix(in srgb,var(--accent) 60%,transparent)}
+.fx-dust{color:var(--gold);line-height:1;text-shadow:0 0 6px var(--gold)}
+.fx-smoke{border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 55%,transparent),transparent 70%);filter:blur(6px)}
+/* 4. Brygget frem */
+.item.brewed,.tab.brewed{animation:brew-in .75s cubic-bezier(.2,1.2,.4,1)}
+@keyframes brew-in{0%{opacity:0;transform:translateY(14px) scale(.9);filter:blur(6px)}60%{opacity:1;filter:blur(0)}100%{transform:none}}
+:root[data-vibe="witchy"] .item.brewed{box-shadow:0 0 0 2px var(--accent),0 0 30px -4px color-mix(in srgb,var(--accent) 70%,transparent)}
+/* 5. Forsvinder i røg */
+.item.vanishing{animation:vanish .48s ease-in forwards;pointer-events:none}
+@keyframes vanish{to{opacity:0;transform:translateY(-18px) scale(.94);filter:blur(8px)}}
+/* 3. Ny nr. 1 i Top 3 */
+/* En lilla lysstribe glider fra venstre mod højre, som når lys rammer et blankt kort; kortet gløder lilla imens */
+.sheen{position:absolute;inset:0;border-radius:inherit;pointer-events:none;overflow:hidden}
+.sheen::before{content:"";position:absolute;top:-20%;bottom:-20%;left:-60%;width:55%;transform:skewX(-18deg);
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 35%,transparent) 30%,color-mix(in srgb,#F3E8FF 75%,transparent) 50%,color-mix(in srgb,var(--accent) 35%,transparent) 70%,transparent);
+  filter:blur(2px);animation:sheen 1.1s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes sheen{to{left:120%}}
+.item.shining{animation:shine-glow 1.3s ease-out}
+@keyframes shine-glow{0%{box-shadow:0 0 0 0 transparent}35%{box-shadow:0 0 0 2px var(--accent),0 0 28px 2px color-mix(in srgb,var(--accent) 60%,transparent)}100%{box-shadow:0 0 0 0 transparent}}
+/* Samme lysstribe over den nye nr. 1 i Top 3 */
+.menu li.crowned{border-radius:6px;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,#F3E8FF 55%,transparent) 50%,transparent 70%) no-repeat;background-size:250% 100%;background-position:120% 0;animation:sheen-li 1.1s cubic-bezier(.4,0,.2,1)}
+@keyframes sheen-li{from{background-position:120% 0}to{background-position:-60% 0}}
+/* 7. Trylle-bølge ved skift til witchy mode */
+.magic{position:fixed;inset:0;z-index:70;pointer-events:none;
+  background:radial-gradient(circle at var(--x) var(--y),#E3D3F3 0%,#B99BE3 18%,#7B3FA0 45%,#3B2756 80%,#140F1E 100%)}
+@media (prefers-reduced-motion:reduce){.sky .star{animation:none;opacity:.6}}
 h1{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:clamp(2rem,6vw,2.9rem);line-height:1.05;margin:0 0 10px;letter-spacing:-.01em}
 :root[data-vibe="witchy"] h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:clamp(2.3rem,7vw,3.3rem);line-height:1;margin:0 0 12px;letter-spacing:-.005em}
 h1 .nowrap{white-space:nowrap}
@@ -85,6 +119,30 @@ h1 .h1-emoji{font-size:.75em}
 .menu li+li{margin-top:2px}
 .menu .score{margin-left:8px;white-space:nowrap;opacity:.85;font-size:.9em}
 .menu .score svg{width:1em;height:1em;vertical-align:-.15em;margin-right:2px}
+.menu .leader{display:none}
+
+/* Witchy: Top 3 som en side i en gammel opskriftsbog. Ramme, ornamenter, romertal og prikker,
+   men stadig med almindelig skrift til drikkenes navne, så det er nemt at læse. */
+:root[data-vibe="witchy"] .menu{position:relative;padding:24px 22px 12px;
+  background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,#fff 7%,transparent),transparent 60%),radial-gradient(ellipse at 50% 120%,color-mix(in srgb,#000 12%,transparent),transparent 60%),var(--pine)}
+:root[data-vibe="witchy"] .menu::before{content:"";position:absolute;inset:7px;border:1px solid color-mix(in srgb,var(--menu-gold) 55%,transparent);border-radius:13px;pointer-events:none}
+:root[data-vibe="witchy"] .menu::after{content:"✦";position:absolute;top:1px;left:50%;transform:translateX(-50%);padding:0 8px;font-size:.75rem;line-height:1;color:var(--menu-gold);background:var(--pine)}
+:root[data-vibe="witchy"] .menu h2{text-align:center;font-size:1.85rem}
+:root[data-vibe="witchy"] .menu h2::before{content:"✦ "}
+:root[data-vibe="witchy"] .menu h2::after{content:" ✦";color:var(--gold)}
+:root[data-vibe="witchy"] .menu p.sub{text-align:center;font-style:italic;margin-bottom:4px}
+:root[data-vibe="witchy"] .menu p.sub::after{content:"—— ✧ ——";display:block;margin-top:6px;color:var(--menu-gold);font-style:normal;letter-spacing:.2em;font-size:.8rem;opacity:.9}
+:root[data-vibe="witchy"] .menu dt,:root[data-vibe="witchy"] .menu dd{border-top:1px dashed color-mix(in srgb,var(--menu-gold) 45%,transparent)}
+:root[data-vibe="witchy"] .menu dl > dt:first-of-type,:root[data-vibe="witchy"] .menu dl > dt:first-of-type + dd{border-top:0}
+:root[data-vibe="witchy"] .menu dt{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:1.15rem;font-variant:small-caps;letter-spacing:.03em;line-height:1.3}
+/* Romertallene står centreret i en fast kolonne, så bred som "III.", så alle navne starter samme sted */
+:root[data-vibe="witchy"] .menu ol{list-style:none;padding-left:0;counter-reset:top}
+:root[data-vibe="witchy"] .menu li{display:flex;align-items:baseline;counter-increment:top}
+:root[data-vibe="witchy"] .menu li::before{content:counter(top, upper-roman) ".";flex:0 0 2.4em;text-align:center;margin-right:4px;font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;color:var(--menu-gold)}
+:root[data-vibe="witchy"] .menu .top-row{display:flex;align-items:baseline;flex:1;min-width:0}
+:root[data-vibe="witchy"] .menu .leader{display:block;flex:1;min-width:14px;margin:0 6px;border-bottom:1.5px dotted color-mix(in srgb,currentColor 40%,transparent);transform:translateY(-.3em)}
+:root[data-vibe="witchy"] .menu .score{margin-left:0;font-weight:600}
+:root[data-vibe="witchy"] .menu dd.empty{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.05rem}
 
 /* Sticky tabs */
 .tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0;margin:0 -18px;padding-left:18px;padding-right:18px;overflow-x:auto;display:flex;gap:8px;scrollbar-width:none}
@@ -92,6 +150,16 @@ h1 .h1-emoji{font-size:.75em}
 /* På pc kan man trække i fanerne med musen, ligesom man swiper på en mobil */
 @media (hover:hover) and (pointer:fine){.tabs{cursor:grab;user-select:none}}
 .tabs.dragging,.tabs.dragging .tab{cursor:grabbing}
+/* Hold nede på en fane: fanerne ryster og kan trækkes. Langt tryk må ikke åbne telefonens menu eller markere tekst. */
+.tab.cat{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.tabs.arranging .tab:not(.cat){opacity:.35;pointer-events:none}
+.tabs.arranging .tab.cat{touch-action:none;cursor:grab}
+.tab.jiggle{animation:jiggle .26s ease-in-out infinite alternate}
+.tab.jiggle:nth-child(even){animation-delay:-.13s;animation-direction:alternate-reverse}
+@keyframes jiggle{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
+.tab.lifted{animation:none;position:relative;z-index:3;cursor:grabbing;box-shadow:0 8px 20px -6px color-mix(in srgb,var(--ink) 45%,transparent)}
+:root[data-vibe="witchy"] .tab.lifted{box-shadow:0 0 0 2px var(--accent),0 0 18px 2px color-mix(in srgb,var(--accent) 55%,transparent)}
+@media (prefers-reduced-motion:reduce){.tab.jiggle{animation:none;outline:1px dashed var(--muted)}}
 .tab.edit{cursor:text;user-select:text;border-style:dashed;border-color:var(--muted)}
 .tab.rediger{color:var(--muted)}
 .tab.slet{border-color:var(--accent);color:var(--accent)}
@@ -103,6 +171,14 @@ h1 .h1-emoji{font-size:.75em}
 .tab .n{font-weight:500;opacity:.65;margin-left:4px}
 .filters{display:flex;gap:16px;margin:8px 0 18px;font-size:.9rem;color:var(--muted)}
 .filters label{display:flex;gap:6px;align-items:center;cursor:pointer}
+/* Witchy: filteret bliver en lille amuletknap; afkrydsningen er en cirkel, der tændes med en gylden stjerne */
+:root[data-vibe="witchy"] .filters label{gap:8px;padding:5px 14px 5px 7px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-weight:600;transition:border-color .25s,color .25s,box-shadow .25s}
+:root[data-vibe="witchy"] .filters input{appearance:none;-webkit-appearance:none;margin:0;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--accent);background:transparent;display:grid;place-items:center;cursor:pointer;transition:background .25s,box-shadow .25s}
+:root[data-vibe="witchy"] .filters input::after{content:"✦";color:var(--gold);font-size:12px;line-height:1;transform:scale(0) rotate(-90deg);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+:root[data-vibe="witchy"] .filters input:checked{background:var(--pine);box-shadow:0 0 10px 1px color-mix(in srgb,var(--accent) 50%,transparent)}
+:root[data-vibe="witchy"] .filters input:checked::after{transform:scale(1) rotate(0)}
+:root[data-vibe="witchy"] .filters label:has(input:checked){border-color:var(--accent);color:var(--accent);box-shadow:0 0 16px -4px color-mix(in srgb,var(--accent) 60%,transparent)}
+:root[data-vibe="witchy"] .filters input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 
 .cat-head{margin:6px 0 12px}
 .cat-head h2{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:1.6rem;margin:0}
@@ -111,6 +187,16 @@ h1 .h1-emoji{font-size:.75em}
 
 .item{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
 .item.tried{border-left:4px solid var(--pine)}
+
+/* Sortering efter vurdering. Kort, der stiger, lyser op og ligger over de andre, mens de glider. */
+.item{position:relative}
+.item.rising{z-index:2;box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent),0 14px 34px -10px color-mix(in srgb,var(--accent) 55%,transparent)}
+.item.sinking{opacity:.75}
+:root[data-vibe="witchy"] .item.rising{box-shadow:0 0 0 2px var(--accent),0 0 26px 2px color-mix(in srgb,var(--accent) 55%,transparent),0 0 60px 6px color-mix(in srgb,var(--gold) 25%,transparent)}
+:root[data-vibe="witchy"] .item.rising::after{content:"✦";position:absolute;top:-10px;right:14px;color:var(--gold);font-size:1.2rem;animation:sparkle .9s ease-out forwards;pointer-events:none}
+:root[data-vibe="witchy"] .item.rising::before{content:"✧";position:absolute;bottom:-8px;left:22px;color:var(--accent);font-size:.95rem;animation:sparkle .9s .15s ease-out forwards;opacity:0;pointer-events:none}
+@keyframes sparkle{0%{opacity:0;transform:scale(.4) rotate(0)}35%{opacity:1;transform:scale(1.2) rotate(40deg)}100%{opacity:0;transform:scale(.6) rotate(110deg) translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){:root[data-vibe="witchy"] .item.rising::after,:root[data-vibe="witchy"] .item.rising::before{animation:none}}
 .row{display:flex;gap:12px;align-items:flex-start}
 .body{flex:1;min-width:0}
 .name{font-weight:700;margin:0;font-size:1.02rem}
@@ -123,6 +209,12 @@ h1 .h1-emoji{font-size:.75em}
 .heart svg{width:100%;max-width:40px;height:auto;aspect-ratio:1}
 .heart.on{color:var(--accent)}
 :root[data-vibe="witchy"] .heart.on svg{filter:drop-shadow(0 0 4px color-mix(in srgb,var(--accent) 45%,transparent))}
+/* Hold nede på et kort for at rette navn og "Sådan". Langt tryk må ikke markere tekst eller åbne telefonens menu. */
+.item .body{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.item.editing{outline:2px dashed var(--accent);outline-offset:2px}
+.edit-hint{margin:0 0 6px;font-size:.8rem;color:var(--accent)}
+.item-edit{display:block;width:100%;margin-top:6px;font:inherit;font-size:.92rem;color:var(--ink);background:var(--surface);border:1px dashed var(--muted);border-radius:10px;padding:8px 10px;resize:vertical}
+input.item-edit{font-weight:700;font-size:1.02rem;margin-top:0}
 .sub-edit{display:block;width:100%;margin-top:6px;font:inherit;font-size:.92rem;color:var(--ink);background:var(--surface);border:1px dashed var(--muted);border-radius:10px;padding:8px 10px;resize:vertical}
 .note{width:100%;margin-top:10px;font:inherit;font-size:.92rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;resize:vertical;min-height:40px}
 .del{border:0;background:none;color:var(--muted);font:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline;padding:0;margin-top:8px}
@@ -141,3 +233,31 @@ h1 .h1-emoji{font-size:.75em}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 footer{margin-top:40px;font-size:.85rem;color:var(--muted)}
 @media (max-width:480px){.menu dl{grid-template-columns:1fr}.menu dd{border-top:0;padding-top:0}}
+
+/* Witchy: "Welcome back"-popup og flagermus */
+.welcome{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:24px;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:welcome-in .35s ease-out}
+.welcome-card{width:min(360px,100%);text-align:center;background:var(--surface);color:var(--ink);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:20px;padding:26px 22px 22px;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--gold) 20%,transparent),0 20px 60px -18px color-mix(in srgb,var(--accent) 70%,transparent),0 0 80px -20px color-mix(in srgb,var(--gold) 45%,transparent);
+  animation:welcome-card-in .45s cubic-bezier(.2,1.3,.4,1)}
+.welcome-moon{font-size:2.2rem;line-height:1;color:var(--gold);margin-bottom:6px;text-shadow:0 0 18px color-mix(in srgb,var(--gold) 60%,transparent);animation:moon-glow 2.6s ease-in-out infinite alternate}
+.welcome h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:2rem;line-height:1.1;margin:0 0 8px}
+.welcome p{margin:0 0 18px;color:var(--muted)}
+.welcome .btn{width:100%;padding:12px 16px;font-size:1rem}
+.welcome.closing{animation:welcome-out .3s ease-in forwards}
+.welcome.closing .welcome-card{animation:welcome-card-out .38s ease-in forwards;position:relative;overflow:hidden}
+/* Når den lukker, bliver kortet til en mørk hulemunding, som flagermusene kommer ud af */
+.welcome.closing .welcome-card::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,#000 0%,#07050b 35%,transparent 75%);animation:cave .2s ease-out forwards}
+@keyframes cave{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1.4)}}
+@keyframes welcome-in{from{opacity:0}}
+@keyframes welcome-out{to{opacity:0}}
+@keyframes welcome-card-in{from{opacity:0;transform:translateY(14px) scale(.92)}}
+@keyframes welcome-card-out{to{opacity:0;transform:scale(.85)}}
+@keyframes moon-glow{to{text-shadow:0 0 30px color-mix(in srgb,var(--gold) 85%,transparent)}}
+/* Sorte flagermus; en svag lilla kant gør dem synlige mod den mørke baggrund */
+.bat{position:fixed;z-index:60;pointer-events:none;color:#08060c;filter:drop-shadow(0 0 1.5px color-mix(in srgb,var(--accent) 70%,transparent))}
+.bat svg{width:100%;height:100%;display:block;overflow:visible}
+.bat .wing{transform-box:view-box;animation:flap var(--flap,.09s) ease-in-out infinite alternate}
+.bat .wing.r{transform-origin:50px 30px}
+.bat .wing.l{transform-origin:50px 30px}
+@keyframes flap{from{scale:1 1}to{scale:1 -.25}}
+@media (prefers-reduced-motion:reduce){.welcome,.welcome-card,.welcome-moon{animation:none}}
