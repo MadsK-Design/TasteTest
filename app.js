@@ -428,6 +428,28 @@ if($("#egg")) $("#egg").onclick = ()=>{
   }, HOLD + GATHER + 500);
 };
 
+// Et lille vink: en gang imellem glimter en stjerne kort, der hvor easter egget gemmer sig.
+// Det sker sjældent og på et tilfældigt tidspunkt, så kun den, der er meget opmærksom, lægger mærke til det i længden.
+const HINT_FIRST = [15000, 40000]; // ms før det første glimt
+const HINT_EVERY = [40000, 100000]; // ms mellem glimtene
+if($("#egg")){
+  const hint = document.createElement("span"); hint.className = "egg-hint"; hint.setAttribute("aria-hidden", "true"); hint.textContent = "✦";
+  $("#egg").after(hint);
+  const between = ([a, b]) => a + Math.random()*(b-a);
+  const glint = ()=>{
+    const quiet = document.hidden || document.documentElement.classList.contains("easter") || matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(!quiet) hint.animate([
+      {opacity:0, transform:"scale(.2) rotate(0)"},
+      {opacity:1, transform:"scale(1.15) rotate(45deg)", offset:.3},
+      {opacity:.55, transform:"scale(.8) rotate(70deg)", offset:.5},
+      {opacity:1, transform:"scale(1) rotate(90deg)", offset:.65},
+      {opacity:0, transform:"scale(.2) rotate(135deg)"}
+    ], {duration:1700, easing:"ease-in-out"});
+    setTimeout(glint, between(HINT_EVERY));
+  };
+  setTimeout(glint, between(HINT_FIRST));
+}
+
 const heartSvgStd = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.9 4.5 6.6 4.5c2.1 0 3.6 1.2 4.4 2.5.8-1.3 2.3-2.5 4.4-2.5 3.7 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg>';
 // En lille eliksirflaske med prop og to bobler (boblerne er huller i formen)
 const potionSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M9 1.5h6v2.2h-1v4.6a7 7 0 1 1-4 0V3.7H9z M9.3 15.2a1.3 1.3 0 1 0 2.6 0a1.3 1.3 0 1 0-2.6 0z M13.4 18.2a.85.85 0 1 0 1.7 0a.85.85 0 1 0-1.7 0z"/></svg>';
