@@ -80,8 +80,13 @@ h1 .nowrap{white-space:nowrap}
 .egg{width:110px;height:32px;padding:0;border:0;background:transparent;opacity:0;cursor:default;-webkit-tap-highlight-color:transparent}
 /* En gang imellem glimter en stjerne kort over easter egget (se app.js). Den er lidt tydeligere end himlens stjerner. */
 .topbar{position:relative}
-.egg-hint{position:absolute;right:46px;top:50%;margin-top:-.5em;font-size:15px;line-height:1;color:var(--gold);opacity:0;pointer-events:none;
-  text-shadow:0 0 3px #fff,0 0 8px var(--gold),0 0 16px color-mix(in srgb,var(--accent) 80%,transparent)}
+.egg-hint{position:absolute;right:44px;top:50%;margin-top:-.5em;font-size:22px;line-height:1;color:#FFF3C4;opacity:0;pointer-events:none;
+  text-shadow:0 0 3px #fff,0 0 8px var(--gold),0 0 18px var(--gold),0 0 30px color-mix(in srgb,var(--accent) 80%,transparent)}
+/* Lysstråler på kryds, som et glimt i en linse; de drejer med stjernen */
+.egg-hint::before,.egg-hint::after{content:"";position:absolute;left:50%;top:50%;border-radius:2px;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--gold) 85%,transparent) 35%,#fff 50%,color-mix(in srgb,var(--gold) 85%,transparent) 65%,transparent)}
+.egg-hint::before{width:56px;height:1.5px;margin:-.75px 0 0 -28px}
+.egg-hint::after{width:1.5px;height:40px;margin:-20px 0 0 -.75px;background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--gold) 85%,transparent) 35%,#fff 50%,color-mix(in srgb,var(--gold) 85%,transparent) 65%,transparent)}
 /* Under easter egget lægger stjernerne sig over siden, så hjertet kan ses */
 .egg-dim{position:fixed;inset:0;z-index:80;pointer-events:none;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 .easter .sky{z-index:81}

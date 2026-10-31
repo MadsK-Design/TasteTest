@@ -438,26 +438,40 @@ if($("#egg")) $("#egg").onclick = ()=>{
   }, back + (reduce ? 0 : EGG_FADE));
 };
 
-// Et lille vink: en gang imellem glimter en stjerne kort, der hvor easter egget gemmer sig.
-// Det sker sjældent og på et tilfældigt tidspunkt, så kun den, der er meget opmærksom, lægger mærke til det i længden.
-const HINT_FIRST = [15000, 40000]; // ms før det første glimt
-const HINT_EVERY = [40000, 100000]; // ms mellem glimtene
+// Et lille vink: der, hvor easter egget gemmer sig, glimter en stjerne kort.
+// Den glimter kun, når toppen af siden er i syne: et tilfældigt øjeblik kort efter, man er kommet op til toppen
+// (eller har åbnet siden), og så en gang imellem, så længe man bliver der.
+const HINT_FIRST = [1500, 5000];  // ms efter man er kommet til toppen, før stjernen glimter
+const HINT_EVERY = [15000, 35000]; // ms mellem glimtene, mens man bliver i toppen
 if($("#egg")){
   const hint = document.createElement("span"); hint.className = "egg-hint"; hint.setAttribute("aria-hidden", "true"); hint.textContent = "✦";
   $("#egg").after(hint);
   const between = ([a, b]) => a + Math.random()*(b-a);
+  let timer = null;
   const glint = ()=>{
     const quiet = document.hidden || document.documentElement.classList.contains("easter") || matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(!quiet) hint.animate([
-      {opacity:0, transform:"scale(.2) rotate(0)"},
-      {opacity:1, transform:"scale(1.15) rotate(45deg)", offset:.3},
-      {opacity:.55, transform:"scale(.8) rotate(70deg)", offset:.5},
-      {opacity:1, transform:"scale(1) rotate(90deg)", offset:.65},
-      {opacity:0, transform:"scale(.2) rotate(135deg)"}
+      {opacity:0, transform:"scale(.2) rotate(-15deg)"},
+      {opacity:1, transform:"scale(1.15) rotate(10deg)", offset:.3},
+      {opacity:.55, transform:"scale(.8) rotate(20deg)", offset:.5},
+      {opacity:1, transform:"scale(1) rotate(30deg)", offset:.65},
+      {opacity:0, transform:"scale(.2) rotate(50deg)"}
     ], {duration:1700, easing:"ease-in-out"});
-    setTimeout(glint, between(HINT_EVERY));
+    timer = setTimeout(glint, between(HINT_EVERY));
   };
-  setTimeout(glint, between(HINT_FIRST));
+  // Hele hjørnet skal være i syne; ruller man væk, stopper glimtene, og de starter forfra, når man kommer op igen
+  let atTop = false;
+  const check = ()=>{
+    const r = $("#egg").getBoundingClientRect();
+    const now = r.top >= 0 && r.bottom <= innerHeight;
+    if(now === atTop) return;
+    atTop = now;
+    clearTimeout(timer); timer = null;
+    if(atTop) timer = setTimeout(glint, between(HINT_FIRST));
+  };
+  addEventListener("scroll", check, {passive:true});
+  addEventListener("resize", check);
+  check();
 }
 
 const heartSvgStd = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.9 4.5 6.6 4.5c2.1 0 3.6 1.2 4.4 2.5.8-1.3 2.3-2.5 4.4-2.5 3.7 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z"/></svg>';
