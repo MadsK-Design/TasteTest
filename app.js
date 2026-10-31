@@ -442,7 +442,7 @@ if($("#egg")) $("#egg").onclick = ()=>{
 // Den glimter kun, når toppen af siden er i syne: et tilfældigt øjeblik kort efter, man er kommet op til toppen
 // (eller har åbnet siden), og så en gang imellem, så længe man bliver der.
 // Mens "Welcome back"-popuppen er fremme, venter den; den glimter kort efter, flagermusene er fløjet.
-const HINT_FIRST = [2000, 4000];  // ms efter man er kommet til toppen, før stjernen glimter
+const HINT_FIRST = [1000, 3000];  // ms efter man er kommet til toppen, før stjernen glimter
 const HINT_EVERY = [5000, 30000]; // ms mellem glimtene, mens man bliver i toppen
 const HINT_AFTER_BATS = [1000, 2000]; // ms efter flagermusene er væk, før stjernen glimter
 let hintSoon = ()=>{}; // kaldes, når "Welcome back" lukkes
