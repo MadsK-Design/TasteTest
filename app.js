@@ -839,7 +839,7 @@ const arrange = {on:false, timer:null, start:null, dragEl:null, startX:0, lastX:
     const s0 = nav.scrollLeft;
     if(x < r.left + edge) nav.scrollLeft -= 10; else if(x > r.right - edge) nav.scrollLeft += 10;
     arrange.startX -= nav.scrollLeft - s0;
-    el.style.transform = `translateX(${x - arrange.startX}px) scale(1.08)`;
+    el.style.transform = `translateX(${x - arrange.startX}px) scale(1.04)`;
     // Byt plads med naboen, når fanens midte passerer naboens midte
     const tabs = catTabs(), i = tabs.indexOf(el);
     const mid = el.getBoundingClientRect().left + el.offsetWidth/2;
@@ -852,7 +852,7 @@ const arrange = {on:false, timer:null, start:null, dragEl:null, startX:0, lastX:
       const before = layoutLeft(el);
       moved();
       arrange.startX += layoutLeft(el) - before; // så fanen bliver under fingeren
-      el.style.transform = `translateX(${x - arrange.startX}px) scale(1.08)`;
+      el.style.transform = `translateX(${x - arrange.startX}px) scale(1.04)`;
     }
   }
   function endDrag(){

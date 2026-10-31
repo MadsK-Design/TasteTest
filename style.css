@@ -157,10 +157,10 @@ h1 .h1-emoji{font-size:.75em}
 .tab.jiggle{animation:jiggle .26s ease-in-out infinite alternate}
 .tab.jiggle:nth-child(even){animation-delay:-.13s;animation-direction:alternate-reverse}
 @keyframes jiggle{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
-/* Når man har fat i en fane, får den et tydeligt omrids */
-.tab.lifted{animation:none;position:relative;z-index:3;cursor:grabbing;outline:2px solid var(--ink);outline-offset:3px;box-shadow:0 8px 20px -6px color-mix(in srgb,var(--ink) 45%,transparent)}
-:root[data-vibe="witchy"] .tab.lifted{outline:none} /* i witchy er den lilla ramme nok */
-:root[data-vibe="witchy"] .tab.lifted{box-shadow:0 0 0 2px var(--accent),0 0 18px 2px color-mix(in srgb,var(--accent) 55%,transparent)}
+/* Når man har fat i en fane, får den et tydeligt omrids.
+   Fanerækken skærer alt af, der stikker mere end ca. 10px ud, så skygge og glød holdes inden for det. */
+.tab.lifted{animation:none;position:relative;z-index:3;cursor:grabbing;outline:2px solid var(--ink);outline-offset:2px;box-shadow:0 3px 7px -2px color-mix(in srgb,var(--ink) 45%,transparent)}
+:root[data-vibe="witchy"] .tab.lifted{outline:none;box-shadow:0 0 0 2px var(--accent),0 0 6px 0 color-mix(in srgb,var(--accent) 65%,transparent)} /* i witchy er den lilla ramme nok */
 @media (prefers-reduced-motion:reduce){.tab.jiggle{animation:none;outline:1px dashed var(--muted)}}
 .tab.edit{cursor:text;user-select:text;border-style:dashed;border-color:var(--muted)}
 .tab.rediger{color:var(--muted)}
