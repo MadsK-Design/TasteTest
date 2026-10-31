@@ -866,7 +866,7 @@ function render(){ renderTabs(); renderMenu(); renderList(); }
 // ===== Højest vurderede drik øverst =====
 // Alle kategorier sorterer automatisk lidt efter, man har vurderet.
 // Rækkefølgen ligger fast imellem, så kortene ikke hopper rundt, mens man vurderer.
-const AUTO_DELAY = 1800; // ms efter sidste vurdering, før listen sorteres
+const AUTO_DELAY = 1200; // ms efter sidste vurdering, før listen sorteres
 let order = {};          // kategori -> drikkenes id i den rækkefølge, de vises
 
 function sortByRating(ids){
