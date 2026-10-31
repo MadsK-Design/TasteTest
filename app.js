@@ -273,7 +273,7 @@ try{ localStorage.removeItem("smagsproever-theme"); }catch(e){}
 // ===== Easter egg 🤫 =====
 // En usynlig knap øverst til højre: stjernerne på himlen samler sig til et hjerte, et stjerneskud flyver ind i det,
 // og "I love you" toner frem. Bagefter flyver stjernerne tilbage, og alt er som før.
-// I standard mode, hvor der ingen stjernehimmel er, laves en midlertidig.
+// Det findes kun i witchy mode; i standard mode er knappen og stjernen, der glimter over den, skjult (se style.css).
 // (Knappen kan mangle i en gammel, gemt index.html lige efter en opdatering; så springes det over i stedet for at fejle.)
 const EGG_STYLE = "pass"; // "pass" eller "hit" (se nedenfor)
 const EGG_SPEED = .75;    // px pr. ms; stjerneskuddets fart, når det suser forbi (hurtigt, som et rigtigt stjerneskud)
@@ -343,7 +343,7 @@ function eggPass(text, cx, cy, reduce){
 
 if($("#egg")) $("#egg").onclick = ()=>{
   const root = document.documentElement;
-  if(root.classList.contains("easter")) return;
+  if(root.classList.contains("easter") || !isWitchy()) return;
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   root.classList.add("easter");
 
@@ -454,7 +454,7 @@ if($("#egg")){
   let timer = null;
   const glint = ()=>{
     if($(".welcome")){ timer = null; return; } // venter, til popuppen lukkes (se hintSoon)
-    const quiet = document.hidden || document.documentElement.classList.contains("easter") || matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const quiet = !isWitchy() || document.hidden || document.documentElement.classList.contains("easter") || matchMedia("(prefers-reduced-motion: reduce)").matches;
     if(!quiet) hint.animate([
       {opacity:0, transform:"scale(.2) rotate(-15deg)"},
       {opacity:1, transform:"scale(1.15) rotate(10deg)", offset:.3},
