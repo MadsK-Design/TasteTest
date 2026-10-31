@@ -729,11 +729,12 @@ function celebrate(cat){
   const tabs = $("#tabs");
   let drag = null, dragged = false;
   tabs.addEventListener("pointerdown", e=>{
-    if(e.pointerType!=="mouse" || e.button!==0 || e.target.tagName==="INPUT" || arrange.on) return;
+    if(e.pointerType!=="mouse" || e.button!==0 || e.target.tagName==="INPUT") return;
     drag = {x:e.clientX, left:tabs.scrollLeft}; dragged = false;
   });
   window.addEventListener("pointermove", e=>{
-    if(!drag || arrange.on){ drag = null; return; }
+    if(!drag) return;
+    if(arrange.dragEl){ drag = null; return; } // man har fat i en fane og flytter den; så skal rækken ikke rulle
     const dx = e.clientX - drag.x;
     if(!dragged && Math.abs(dx) > 5){ dragged = true; tabs.classList.add("dragging"); }
     if(dragged) tabs.scrollLeft = drag.left - dx;
@@ -742,11 +743,37 @@ function celebrate(cat){
   tabs.addEventListener("click", e=>{ if(dragged){ e.stopPropagation(); e.preventDefault(); dragged = false; } }, true);
 })();
 
+// Et "tryk et vilkårligt sted" skal være et rigtigt tryk: fingeren må ikke flytte sig (så er det et scroll).
+// Selve trykket gør ikke andet end at stoppe; det, der skal ske bagefter, venter, til klikket er spist,
+// så siden ikke tegnes om under fingeren, og klikket rammer noget andet.
+function onTapOutside(isActive, isInside, onTap){
+  let tap = null, swallow = false, after = null;
+  const finish = ()=>{ if(after){ const f = after; after = null; f(); } };
+  document.addEventListener("pointerdown", e=>{
+    tap = (isActive() && !isInside(e.target)) ? {x:e.clientX, y:e.clientY} : null;
+  }, true);
+  window.addEventListener("pointermove", e=>{
+    if(tap && Math.hypot(e.clientX-tap.x, e.clientY-tap.y) > 10) tap = null; // det blev et scroll
+  }, true);
+  window.addEventListener("pointercancel", ()=>{ tap = null; }, true); // telefonen overtog trykket for at scrolle
+  window.addEventListener("pointerup", ()=>{
+    if(!tap) return;
+    tap = null; swallow = true;
+    after = onTap();
+    setTimeout(()=>{ swallow = false; finish(); }, 400); // hvis der ikke kommer noget klik
+  }, true);
+  document.addEventListener("click", e=>{
+    if(!swallow) return;
+    swallow = false; e.stopPropagation(); e.preventDefault();
+    finish();
+  }, true);
+}
+
 // ===== Hold nede på et kort: navn og "Sådan" kan rettes =====
-// Et tryk et vilkårligt sted uden for felterne stopper redigeringen, og trykket gør ikke andet.
+// Et tryk et vilkårligt sted uden for felterne stopper redigeringen; man kan godt scrolle imens.
 (()=>{
   const list = $("#list");
-  let timer = null, start = null, swallow = false, stopPending = false;
+  let timer = null, start = null, swallow = false;
   list.addEventListener("pointerdown", e=>{
     const card = e.target.closest(".item[data-id]");
     if(!card || card.dataset.id===editItem || e.target.closest("button, input, textarea, a")) return;
@@ -768,24 +795,23 @@ function celebrate(cat){
   window.addEventListener("pointercancel", up);
   list.addEventListener("contextmenu", e=>{ if(e.target.closest(".item .body")) e.preventDefault(); });
 
-  document.addEventListener("pointerdown", e=>{
-    if(editItem && !e.target.closest(".item-edit")){
-      // Listen tegnes først om, når klikket er spist; ellers kunne klikket ramme et hjerte i den gamle liste
-      editItem = null; stopPending = true; swallow = true;
-      setTimeout(()=>{ swallow = false; if(stopPending){ stopPending = false; render(); } }, 450); // blev det et scroll
-    }
-  }, true);
   document.addEventListener("click", e=>{
-    if(swallow){ swallow = false; e.stopPropagation(); e.preventDefault(); }
-    if(stopPending){ stopPending = false; render(); }
+    if(swallow){ swallow = false; e.stopPropagation(); e.preventDefault(); } // klikket efter det lange tryk
   }, true);
+  onTapOutside(()=>!!editItem, t=>!!t.closest(".item-edit"), ()=>{
+    editItem = null;
+    return render; // listen tegnes først om, når klikket er spist
+  });
 })();
 const LONG_PRESS_CARD = 500; // ms
 
 // ===== Hold nede på en fane: fanerne ryster, og man kan trække dem i ny rækkefølge =====
-// Et tryk et vilkårligt andet sted afslutter. Rækkefølgen gemmes og bruges også i Top 3.
-const LONG_PRESS = 500; // ms
-const arrange = {on:false, timer:null, start:null, dragEl:null, startX:0, swallow:false};
+// 1) Hold nede på en fane, så ryster de. 2) Hold igen på en fane, til den får et omrids; så har man fat i den
+// og kan trække den. Trykker man og trækker med det samme, ruller man i stedet fanerækken.
+// Et tryk (ikke et scroll) et vilkårligt sted uden for fanerne afslutter. Rækkefølgen bruges også i Top 3.
+const LONG_PRESS = 500; // ms, for at få fanerne til at ryste
+const GRAB_PRESS = 350; // ms, for at få fat i en fane, når de ryster
+const arrange = {on:false, timer:null, start:null, dragEl:null, startX:0, lastX:0};
 (()=>{
   const nav = $("#tabs");
   const catTabs = () => [...nav.querySelectorAll(".tab.cat")];
@@ -804,6 +830,7 @@ const arrange = {on:false, timer:null, start:null, dragEl:null, startX:0, swallo
   function beginDrag(el, x){
     arrange.dragEl = el; arrange.startX = x;
     el.classList.add("lifted");
+    if(navigator.vibrate) navigator.vibrate(8);
   }
   function moveDrag(x){
     const el = arrange.dragEl;
@@ -841,13 +868,17 @@ const arrange = {on:false, timer:null, start:null, dragEl:null, startX:0, swallo
   nav.addEventListener("pointerdown", e=>{
     const tab = e.target.closest(".tab.cat");
     if(!tab || editing || deleting) return;
-    if(arrange.on){ e.preventDefault(); beginDrag(tab, e.clientX); try{ tab.setPointerCapture(e.pointerId); }catch(_){} return; }
-    arrange.start = {x:e.clientX, y:e.clientY};
+    arrange.start = {x:e.clientX, y:e.clientY}; arrange.lastX = e.clientX;
     clearTimeout(arrange.timer);
-    arrange.timer = setTimeout(()=>{ startArrange(); beginDrag(tab, e.clientX); try{ tab.setPointerCapture(e.pointerId); }catch(_){} }, LONG_PRESS);
+    const id = e.pointerId;
+    arrange.timer = arrange.on
+      ? setTimeout(()=>{ arrange.start = null; beginDrag(tab, arrange.lastX); try{ tab.setPointerCapture(id); }catch(_){} }, GRAB_PRESS) // få fat i fanen
+      : setTimeout(()=>{ arrange.start = null; startArrange(); }, LONG_PRESS); // få fanerne til at ryste
   });
   window.addEventListener("pointermove", e=>{
+    arrange.lastX = e.clientX;
     if(arrange.dragEl){ moveDrag(e.clientX); return; }
+    // Flytter fingeren sig, før tiden er gået, er det et scroll af fanerækken
     if(arrange.start && Math.hypot(e.clientX-arrange.start.x, e.clientY-arrange.start.y) > 8){ clearTimeout(arrange.timer); arrange.start = null; }
   });
   const up = ()=>{ clearTimeout(arrange.timer); arrange.start = null; endDrag(); };
@@ -857,15 +888,10 @@ const arrange = {on:false, timer:null, start:null, dragEl:null, startX:0, swallo
   document.addEventListener("touchmove", e=>{ if(arrange.dragEl) e.preventDefault(); }, {passive:false});
   nav.addEventListener("contextmenu", e=>{ if(e.target.closest(".tab.cat")) e.preventDefault(); });
 
-  // Et tryk uden for fanerne afslutter, og trykket gør ikke andet end det
-  document.addEventListener("pointerdown", e=>{
-    if(arrange.on && !e.target.closest(".tab.cat")){
-      arrange.swallow = true; stopArrange();
-      setTimeout(()=>{ arrange.swallow = false; }, 600); // blev det et scroll i stedet for et klik, glemmes det igen
-    }
-  }, true);
+  // Et tryk uden for fanerne afslutter (et scroll gør ikke), og trykket gør ikke andet end det
+  onTapOutside(()=>arrange.on && !arrange.dragEl, t=>!!t.closest(".tab.cat"), ()=>{ stopArrange(); return null; });
+  // Et tryk på en fane, mens de ryster, skifter ikke kategori
   document.addEventListener("click", e=>{
-    if(arrange.swallow){ arrange.swallow = false; e.stopPropagation(); e.preventDefault(); return; }
     if(arrange.on && e.target.closest(".tab.cat")){ e.stopPropagation(); e.preventDefault(); }
   }, true);
 })();

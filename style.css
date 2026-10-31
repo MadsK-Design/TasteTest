@@ -153,11 +153,13 @@ h1 .h1-emoji{font-size:.75em}
 /* Hold nede på en fane: fanerne ryster og kan trækkes. Langt tryk må ikke åbne telefonens menu eller markere tekst. */
 .tab.cat{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 .tabs.arranging .tab:not(.cat){opacity:.35;pointer-events:none}
-.tabs.arranging .tab.cat{touch-action:none;cursor:grab}
+.tabs.arranging .tab.cat{touch-action:pan-x;cursor:grab} /* man kan stadig rulle fanerækken */
 .tab.jiggle{animation:jiggle .26s ease-in-out infinite alternate}
 .tab.jiggle:nth-child(even){animation-delay:-.13s;animation-direction:alternate-reverse}
 @keyframes jiggle{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
-.tab.lifted{animation:none;position:relative;z-index:3;cursor:grabbing;box-shadow:0 8px 20px -6px color-mix(in srgb,var(--ink) 45%,transparent)}
+/* Når man har fat i en fane, får den et tydeligt omrids */
+.tab.lifted{animation:none;position:relative;z-index:3;cursor:grabbing;outline:2px solid var(--ink);outline-offset:3px;box-shadow:0 8px 20px -6px color-mix(in srgb,var(--ink) 45%,transparent)}
+:root[data-vibe="witchy"] .tab.lifted{outline-color:var(--gold)}
 :root[data-vibe="witchy"] .tab.lifted{box-shadow:0 0 0 2px var(--accent),0 0 18px 2px color-mix(in srgb,var(--accent) 55%,transparent)}
 @media (prefers-reduced-motion:reduce){.tab.jiggle{animation:none;outline:1px dashed var(--muted)}}
 .tab.edit{cursor:text;user-select:text;border-style:dashed;border-color:var(--muted)}
