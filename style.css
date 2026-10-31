@@ -78,6 +78,8 @@ h1 .nowrap{white-space:nowrap}
 .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 14px}
 /* Easter egg 🤫: en helt usynlig knap, hvor Light mode-knappen sad */
 .egg{width:110px;height:32px;padding:0;border:0;background:transparent;opacity:0;cursor:default;-webkit-tap-highlight-color:transparent}
+/* Easter egget hører kun til witchy mode */
+:root:not([data-vibe="witchy"]) .egg,:root:not([data-vibe="witchy"]) .egg-hint{display:none}
 /* En gang imellem glimter en stjerne kort over easter egget (se app.js). Den er lidt tydeligere end himlens stjerner. */
 .topbar{position:relative}
 .egg-hint{position:absolute;right:44px;top:50%;margin-top:-.5em;font-size:22px;line-height:1;color:#FFF3C4;opacity:0;pointer-events:none;
