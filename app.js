@@ -279,6 +279,7 @@ const EGG_SPEED = .75;    // px pr. ms; stjerneskuddets fart, når det suser for
 const EGG_START = .75;    // stjerneskuddet starter, når hjertet er så langt (0–1) i at samle sig
 const EGG_LAG = 80;       // px; så langt bag stjerneskuddets hoved teksten bliver skrevet
 const EGG_AFTER = 1500;   // ms; så længe hjertet og teksten bliver stående, når teksten er skrevet
+const EGG_FADE = 1800;    // ms; så langsomt stjernerne toner ud, når de er fløjet tilbage på plads
 // Hvor langt fra hjertets midte stjerneskuddet toner frem og forsvinder igen: højst 420 px.
 // På en smal skærm starter det lige uden for kanten, så det får et tilløb, og er tonet helt frem kort efter, det kommer ind.
 const eggReach = () => Math.min(420, innerWidth/2 + 60);
@@ -418,6 +419,10 @@ if($("#egg")) $("#egg").onclick = ()=>{
     dim.animate([{opacity:1}, {opacity:0}], {duration:1200, fill:"forwards"});
     extra.forEach(s=>s.animate([{opacity:1}, {opacity:0}], {duration:GATHER, fill:"forwards"}));
   }, HOLD);
+  // Når stjernerne er tilbage på plads, toner de langsomt ud i stedet for at forsvinde med ét.
+  // I witchy mode toner himlen bagefter lige så langsomt frem igen bag siden, som den plejer at være.
+  const back = HOLD + GATHER + 400;
+  const fade = reduce ? null : sky.animate([{opacity:1}, {opacity:0}], {duration:EGG_FADE, delay:back, easing:"ease-in-out", fill:"forwards"});
   setTimeout(()=>{
     moves.forEach(a=>{ try{ a.cancel(); }catch(_){} });
     order.forEach(s=>s.classList.remove("in-heart"));
@@ -425,7 +430,12 @@ if($("#egg")) $("#egg").onclick = ()=>{
     if(tempSky) tempSky.remove();
     text.remove(); dim.remove();
     root.classList.remove("easter");
-  }, HOLD + GATHER + 500);
+    if(fade && !tempSky){
+      const fadeIn = sky.animate([{opacity:0}, {opacity:1}], {duration:EGG_FADE, easing:"ease-in-out"});
+      fade.cancel();
+      setTimeout(()=>fadeIn.cancel(), EGG_FADE + 500); // sikkerhed: himlen må aldrig blive hængende usynlig
+    }
+  }, back + (reduce ? 0 : EGG_FADE));
 };
 
 // Et lille vink: en gang imellem glimter en stjerne kort, der hvor easter egget gemmer sig.
