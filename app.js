@@ -72,9 +72,10 @@ const allCats = () => {
   return cats.map((c,idx)=>({c,idx})).sort((a,b)=>pos(a.c)-pos(b.c) || a.idx-b.idx).map(x=>x.c);
 };
 // Faste drikke, der er fjernet, markeres med removed:true i entries (så Firestore-reglerne ikke skal ændres).
-// Rettet navn og "Sådan" på faste drikke gemmes også i entries[id] som name/how.
+// Rettet navn og "Sådan" på faste drikke gemmes også i entries[id] som name/how,
+// og er drikken flyttet til en anden kategori, står den nye kategori i entries[id].cat.
 const allItems = () => ITEMS.filter(i=>!entry(i.id).removed)
-  .map(i=>{ const e = entry(i.id); return Object.assign({}, i, "name" in e ? {name:e.name} : {}, "how" in e ? {how:e.how} : {}); })
+  .map(i=>{ const e = entry(i.id); return Object.assign({}, i, "name" in e ? {name:e.name} : {}, "how" in e ? {how:e.how} : {}, "cat" in e ? {cat:e.cat} : {}); })
   .concat(state.custom || []);
 
 function setItem(i, field, value){
@@ -502,6 +503,7 @@ function smoke(r, n, rise){
   }
 }
 const justAdded = new Set(); // id på drikke/kategorier, der lige er oprettet og skal "brygges frem"
+const arrived = new Set();   // drikke, der lige er flyttet til en anden kategori; de "brygges frem", første gang man ser dem
 // 10/10 og ny nr. 1 fejres først, når man er færdig med at vurdere: lige før kortene sorteres (se scheduleAuto)
 const pendingTen = new Set(); // drikke, der har fået 10, siden sidste sortering
 const crownBase = {};         // kategori -> nr. 1, som den var, før man begyndte at vurdere
@@ -694,6 +696,7 @@ function removeCat(c){
   const ids = (state.custom||[]).filter(i=>i.cat===c.id).map(i=>i.id);
   state.custom = (state.custom||[]).filter(i=>i.cat!==c.id);
   ids.forEach(id=>{ delete state.entries[id]; });
+  ITEMS.forEach(i=>{ if(entry(i.id).cat===c.id) state.entries[i.id] = {removed:true}; }); // faste drikke, der var flyttet hertil
   state.kategorier = (state.kategorier||[]).filter(k=>k.id!==c.id);
   if(!c.custom) state.kategorier.push({id:c.id, skjult:true});
   if(current===c.id || !allCats().some(x=>x.id===current)){
@@ -745,10 +748,12 @@ function renderList(){
     const card = document.createElement("article");
     card.className = "item" + (isTried(i.id)?" tried":"") + (editItem===i.id?" editing":"");
     card.dataset.id = i.id;
-    if(justAdded.has(i.id) && fxOn()){
+    if(arrived.has(i.id) && !fxOn() && !reduced()) card.classList.add("brewed");
+    if((justAdded.has(i.id) || arrived.has(i.id)) && fxOn()){
       card.classList.add("brewed");
       setTimeout(()=>smoke(card.getBoundingClientRect(), 7, 50)); // 4. bobler op af gryden (når kortet er sat ind på siden)
     }
+    arrived.delete(i.id);
     const row = document.createElement("div"); row.className="row";
 
     const body = document.createElement("div"); body.className="body";
@@ -823,7 +828,15 @@ function renderList(){
       smoke(card.getBoundingClientRect(), 10, 70);
       setTimeout(gone, 480);
     };
-    foot.append(del);
+    if(editItem===i.id){
+      // Nederst til venstre på et åbnet kort: flyt drikken til en anden kategori
+      const acts = document.createElement("div"); acts.className = "foot-acts";
+      const mv = document.createElement("button"); mv.type = "button"; mv.className = "move-btn";
+      mv.innerHTML = '<span class="std">Flyt til en anden kategori</span><span class="witch">✦ Tryl over i en anden kategori</span>';
+      mv.setAttribute("aria-haspopup", "menu"); mv.setAttribute("aria-expanded", "false");
+      mv.onclick = ()=>toggleMovePop(card, mv, i);
+      acts.append(mv, del); foot.append(acts);
+    } else foot.append(del);
 
     row.append(body); card.append(row, foot); main.append(card);
   });
@@ -862,6 +875,133 @@ function renderList(){
 }
 
 function render(){ renderTabs(); renderMenu(); renderList(); }
+
+// ===== Flyt en drik til en anden kategori =====
+// Knappen findes på et kort, der er åbnet ved at holde nede. Den åbner en lille liste med de andre kategorier.
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+function toggleMovePop(card, btn, i){
+  const open = card.querySelector(".move-pop");
+  if(open){ closeMovePop(open, btn); return; }
+  const pop = document.createElement("div"); pop.className = "move-pop"; pop.setAttribute("role", "menu");
+  const t = document.createElement("p"); t.className = "move-title";
+  t.innerHTML = '<span class="std">Flyt til</span><span class="witch">Hvor skal eliksiren hen?</span>';
+  pop.append(t);
+  const cats = allCats().filter(c=>c.id!==i.cat);
+  if(!cats.length){
+    const p = document.createElement("p"); p.className = "move-none";
+    p.textContent = "Der er ingen andre kategorier endnu.";
+    pop.append(p);
+  }
+  cats.forEach((c,k)=>{
+    const o = document.createElement("button"); o.type = "button"; o.className = "move-opt";
+    o.setAttribute("role", "menuitem"); o.style.setProperty("--k", k);
+    o.textContent = c.label;
+    o.onclick = ()=>moveItem(card, i, c.id);
+    pop.append(o);
+  });
+  card.append(pop);
+  // Popuppen åbner op over knappen; er der ikke plads foroven, åbner den nedad i stedet
+  const cr = card.getBoundingClientRect(), br = btn.getBoundingClientRect();
+  pop.style.bottom = (cr.bottom - br.top + 8) + "px";
+  if(pop.getBoundingClientRect().top < 8){
+    pop.classList.add("below");
+    pop.style.bottom = "auto"; pop.style.top = (br.bottom - cr.top + 8) + "px";
+  }
+  btn.setAttribute("aria-expanded", "true");
+  if(fxOn()){
+    // Lidt guldstøv springer ud af knappen, når besværgelsen åbnes
+    for(let k=0; k<8; k++){
+      const d = particle("fx-dust fx-top", br.left + rnd(10, 40), br.top + br.height/2, "✦");
+      d.style.fontSize = rnd(7, 12) + "px";
+      const a = rnd(-160, -20)*Math.PI/180, len = rnd(24, 54);
+      fly(d, [
+        {transform:"translate(0,0) scale(.3) rotate(0)", opacity:0},
+        {transform:`translate(${Math.cos(a)*len*.6}px,${Math.sin(a)*len*.6}px) scale(1) rotate(90deg)`, opacity:1, offset:.4},
+        {transform:`translate(${Math.cos(a)*len}px,${Math.sin(a)*len}px) scale(.4) rotate(200deg)`, opacity:0}
+      ], {duration:rnd(500, 750), delay:rnd(0, 80), easing:"ease-out"});
+    }
+  }
+}
+function closeMovePop(pop, btn){
+  btn.setAttribute("aria-expanded", "false");
+  if(reduced()){ pop.remove(); return; }
+  pop.classList.add("closing");
+  setTimeout(()=>pop.remove(), 160);
+}
+function moveItem(card, i, to){
+  if(card.classList.contains("moving")) return;
+  card.classList.add("moving");
+  const pop = card.querySelector(".move-pop"); if(pop) pop.remove();
+  const from = i.cat;
+  // Fanen, drikken flyttes til, rulles frem, så man kan se den lande
+  const nav = $("#tabs"), tab = nav.querySelector(`.tab.cat[data-id="${to}"]`);
+  if(tab){
+    const nr = nav.getBoundingClientRect(), tr = tab.getBoundingClientRect();
+    if(tr.left < nr.left + 8) nav.scrollLeft -= nr.left + 8 - tr.left;
+    else if(tr.right > nr.right - 8) nav.scrollLeft += tr.right - (nr.right - 8);
+  }
+  const go = ()=>{
+    setItem(i, "cat", to); persist();
+    if(order[from]) order[from] = order[from].filter(id=>id!==i.id);
+    delete order[to]; // i den nye kategori lægges drikken ind efter sin vurdering
+    arrived.add(i.id);
+    editItem = null;
+    // De andre kort glider op og lukker hullet
+    const tops = new Map([...document.querySelectorAll(".item[data-id]")].map(el=>[el.dataset.id, el.getBoundingClientRect().top]));
+    render();
+    if(!reduced()) document.querySelectorAll(".item[data-id]").forEach(el=>{
+      const b = tops.get(el.dataset.id); if(b==null) return;
+      const dy = b - el.getBoundingClientRect().top;
+      if(Math.abs(dy) > 1) el.animate([{transform:`translateY(${dy}px)`}, {transform:"none"}], {duration:420, easing:"cubic-bezier(.22,.9,.24,1)"});
+    });
+    setTimeout(()=>{
+      const t = $(`.tab.cat[data-id="${to}"]`); if(!t) return;
+      t.classList.remove("landed"); void t.offsetWidth; t.classList.add("landed");
+      setTimeout(()=>t.classList.remove("landed"), 1100);
+    }, fxOn() ? 380 : 0);
+  };
+  if(reduced()) return go();
+  if(!fxOn()){
+    card.animate([{opacity:1, transform:"none"}, {opacity:0, transform:"translateY(-10px) scale(.97)"}], {duration:260, easing:"ease-in", fill:"forwards"});
+    setTimeout(go, 260);
+    return;
+  }
+  // Witchy: kortet hvirvles ind i en lilla malstrøm, og et spor af stjerner flyver hen til den nye fane
+  const r = card.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height/2;
+  const glow = (a, b) => `drop-shadow(0 0 ${a}px rgba(181,123,234,${b})) drop-shadow(0 0 ${a/3}px rgba(232,210,255,${b}))`;
+  card.animate([
+    {transform:"none", opacity:1, filter:glow(0, 0)},
+    {transform:"scale(1.03) rotate(.6deg)", opacity:1, filter:glow(14, 1), offset:.3},
+    {transform:"scale(.15) rotate(-14deg)", opacity:0, filter:glow(4, .3)}
+  ], {duration:650, easing:"cubic-bezier(.5,0,.75,0)", fill:"forwards"});
+  const vs = Math.min(r.width*.8, 220);
+  const v = particle("fx-vortex", cx - vs/2, cy - vs/2);
+  v.style.width = v.style.height = vs + "px";
+  fly(v, [
+    {transform:"rotate(0) scale(.2)", opacity:0},
+    {transform:"rotate(240deg) scale(1)", opacity:.95, offset:.35},
+    {transform:"rotate(720deg) scale(.05)", opacity:0}
+  ], {duration:950, easing:"ease-in-out"});
+  smoke(r, 6, 40);
+  const tr = tab && tab.getBoundingClientRect();
+  if(tr){
+    const tx = tr.left + tr.width/2, ty = tr.top + tr.height/2;
+    for(let k=0; k<14; k++){
+      const sx = cx + rnd(-20, 20), sy = cy + rnd(-12, 12);
+      const d = particle("fx-dust fx-top", sx, sy, k%3 ? "✦" : "✧");
+      d.style.fontSize = rnd(9, 16) + "px";
+      const dx = tx - sx, dy = ty - sy, len = Math.hypot(dx, dy) || 1;
+      const bend = rnd(-1, 1)*Math.min(140, len*.35), px = -dy/len*bend, py = dx/len*bend; // bøj sporet lidt til siden
+      fly(d, [
+        {transform:"translate(0,0) scale(.3) rotate(0)", opacity:0},
+        {transform:`translate(${dx*.15+px*.4}px,${dy*.15+py*.4}px) scale(1.1) rotate(80deg)`, opacity:1, offset:.2},
+        {transform:`translate(${dx*.55+px}px,${dy*.55+py}px) scale(.9) rotate(200deg)`, opacity:1, offset:.6},
+        {transform:`translate(${dx}px,${dy}px) scale(.35) rotate(320deg)`, opacity:0}
+      ], {duration:rnd(750, 950), delay:200 + k*28, easing:"cubic-bezier(.45,.05,.55,.95)"});
+    }
+  }
+  setTimeout(go, 650);
+}
 
 // ===== Højest vurderede drik øverst =====
 // Alle kategorier sorterer automatisk lidt efter, man har vurderet.
@@ -1008,7 +1148,7 @@ function onTapOutside(isActive, isInside, onTap){
   document.addEventListener("click", e=>{
     if(swallow){ swallow = false; e.stopPropagation(); e.preventDefault(); } // klikket efter det lange tryk
   }, true);
-  onTapOutside(()=>!!editItem, t=>!!t.closest(".item-edit"), ()=>{
+  onTapOutside(()=>!!editItem, t=>!!t.closest(".item-edit, .move-btn, .move-pop"), ()=>{
     editItem = null;
     return render; // listen tegnes først om, når klikket er spist
   });
