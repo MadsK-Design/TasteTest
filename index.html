@@ -13,7 +13,12 @@
   // Hent altid den nyeste style.css og app.js, så en opdatering ses med det samme
   window.V = Date.now();
   // Witchy mode huskes på enheden og sættes før siden tegnes, så den ikke blinker
-  try{ if(localStorage.getItem("smagsproever-vibe")==="witchy") document.documentElement.dataset.vibe = "witchy"; }catch(e){}
+  // Uden en kode er der ingen witchy mode (siden skjuler også knappen, så den ikke blinker frem)
+  try{
+    var harKode = localStorage.getItem("smagsproever-kode") || /[?&]kode=/.test(location.search);
+    if(!harKode) document.documentElement.classList.add("uden-kode");
+    else if(localStorage.getItem("smagsproever-vibe")==="witchy") document.documentElement.dataset.vibe = "witchy";
+  }catch(e){}
   document.write('<link rel="stylesheet" href="style.css?v=' + V + '">');
 </script>
 <noscript><link rel="stylesheet" href="style.css"></noscript>
@@ -28,8 +33,10 @@
   </div>
   <h1><span class="std">Smagsprøver til jul og nytår</span><span class="witch">The Journey of the right <span class="nowrap">brews <span class="h1-emoji" aria-hidden="true">⚗️</span></span></span></h1>
   <p class="lede std">Hej min elskede skat. Så er der en ny app 😘 Den her er lavet, så vi kan få overblik over, hvad du kan lide at drikke, og hvad vi evt. skal servere til jul og nytår eller andre skønne begivenheder.</p>
+  <p class="lede gaest-lede">Her kan du se de alkoholfri drikke, Silke har smagt, og hvor godt hun kunne lide dem. De bedste står øverst i hver kategori, med opskrift, hvor der er en.</p>
   <p class="lede witch">Welcome to Witch Mode. This is now your digital witch book, which will help you find the best brews to guide you through the journey of creating life.<br><span class="lede-end">– Let the journey begin!</span></p>
   <p class="sync" id="sync">Indlæser…</p>
+  <button class="del afbryd" id="afbryd" type="button" hidden>Afbryd forbindelse</button>
   <form class="add kode" id="kode-form" hidden>
     <input type="text" id="kode-input" placeholder="Skriv jeres kode" aria-label="Jeres kode" autocomplete="off" autocapitalize="off" spellcheck="false">
     <button class="btn" type="submit">Åbn listen</button>

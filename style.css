@@ -1,318 +1,1837 @@
 /* Siden er altid mørk. Standard: mørk grøn og rosa */
-:root{
-  --bg:#121918; --surface:#1B2422; --ink:#E6EEEC; --muted:#9AABA6; --line:#2C3836;
-  --accent:#E58C9A; --accent-soft:#3A2228; --gold:#E2C26A; --pine:#8CC2B3; --pine-soft:#20302C;
-  --menu-ink:#10201C;
-  color-scheme:dark;
+:root {
+  --bg: #121918;
+  --surface: #1B2422;
+  --ink: #E6EEEC;
+  --muted: #9AABA6;
+  --line: #2C3836;
+  --accent: #E58C9A;
+  --accent-soft: #3A2228;
+  --gold: #E2C26A;
+  --pine: #8CC2B3;
+  --pine-soft: #20302C;
+  --menu-ink: #10201C;
+  color-scheme: dark;
 }
+
 /* Witchy mode: natlilla, ametyst, lavendel og stearinlys-guld */
-:root[data-vibe="witchy"]{
-  --bg:#140F1E; --surface:#1E172B; --ink:#ECE6F5; --muted:#A699BA; --line:#342A47;
-  --accent:#C39BE6; --accent-soft:#33264A; --gold:#E2C26A; --pine:#B99BE3; --pine-soft:#2A2140;
-  --menu-ink:#1A1226; --glow:#2B1F40; --menu-gold:#6A4A10;
+:root[data-vibe="witchy"] {
+  --bg: #140F1E;
+  --surface: #1E172B;
+  --ink: #ECE6F5;
+  --muted: #A699BA;
+  --line: #342A47;
+  --accent: #C39BE6;
+  --accent-soft: #33264A;
+  --gold: #E2C26A;
+  --pine: #B99BE3;
+  --pine-soft: #2A2140;
+  --menu-ink: #1A1226;
+  --glow: #2B1F40;
+  --menu-gold: #6A4A10;
 }
+
 /* Tekster, der findes i begge udgaver; kun den ene vises */
-:root[data-vibe="witchy"] .std, :root:not([data-vibe="witchy"]) .witch{display:none}
-:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 70px)}
-*,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:16px;line-height:1.5}
+:root[data-vibe="witchy"] .std,
+:root:not([data-vibe="witchy"]) .witch {
+  display: none
+}
+
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px)
+}
+
+html {
+  scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 70px)
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5
+}
+
 /* Witchy: et svagt måneskær øverst; stjernerne ligger i .sky, så de kan blinke */
-:root[data-vibe="witchy"] body{
+:root[data-vibe="witchy"] body {
   background:
     radial-gradient(ellipse 90% 420px at 50% -60px, var(--glow), transparent 70%) no-repeat,
     var(--bg);
 }
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
-.wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:28px 18px 80px}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  background: var(--bg)
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 28px 18px 80px
+}
 
 /* ===== Witchy-animationer ===== */
 /* 6. Stjernehimmel og stjerneskud */
-.sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
-.sky .star{position:absolute;border-radius:50%;background:var(--accent);box-shadow:0 0 4px var(--accent);animation:twinkle 4s ease-in-out infinite}
-.sky .star.gold{background:var(--gold);box-shadow:0 0 5px var(--gold)}
-@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.2)}}
-.sky .shooting{position:absolute;width:90px;height:2px;border-radius:2px;transform-origin:right center;
-  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--gold) 80%,transparent) 70%,#fff);filter:drop-shadow(0 0 4px var(--gold))}
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden
+}
+
+.sky .star {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 4px var(--accent);
+  animation: twinkle 4s ease-in-out infinite
+}
+
+.sky .star.gold {
+  background: var(--gold);
+  box-shadow: 0 0 5px var(--gold)
+}
+
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: .15;
+    transform: scale(.7)
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2)
+  }
+}
+
+.sky .shooting {
+  position: absolute;
+  width: 90px;
+  height: 2px;
+  border-radius: 2px;
+  transform-origin: right center;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 80%, transparent) 70%, #fff);
+  filter: drop-shadow(0 0 4px var(--gold))
+}
+
 /* Partikler: bobler, guldstøv og røg */
-.fx{position:fixed;z-index:65;pointer-events:none}
-.fx-top{z-index:75}
-.fx-bubble{border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 18%,color-mix(in srgb,var(--accent) 70%,transparent) 45%,transparent 72%);box-shadow:0 0 6px color-mix(in srgb,var(--accent) 60%,transparent)}
-.fx-dust{color:var(--gold);line-height:1;text-shadow:0 0 6px var(--gold)}
-.fx-smoke{border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 55%,transparent),transparent 70%);filter:blur(6px)}
+.fx {
+  position: fixed;
+  z-index: 65;
+  pointer-events: none
+}
+
+.fx-top {
+  z-index: 75
+}
+
+.fx-bubble {
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff 0 18%, color-mix(in srgb, var(--accent) 70%, transparent) 45%, transparent 72%);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 60%, transparent)
+}
+
+.fx-dust {
+  color: var(--gold);
+  line-height: 1;
+  text-shadow: 0 0 6px var(--gold)
+}
+
+.fx-smoke {
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%);
+  filter: blur(6px)
+}
+
 /* 4. Brygget frem */
-.item.brewed,.tab.brewed{animation:brew-in .75s cubic-bezier(.2,1.2,.4,1)}
-@keyframes brew-in{0%{opacity:0;transform:translateY(14px) scale(.9);filter:blur(6px)}60%{opacity:1;filter:blur(0)}100%{transform:none}}
-:root[data-vibe="witchy"] .item.brewed{box-shadow:0 0 0 2px var(--accent),0 0 30px -4px color-mix(in srgb,var(--accent) 70%,transparent)}
+.item.brewed,
+.tab.brewed {
+  animation: brew-in .75s cubic-bezier(.2, 1.2, .4, 1)
+}
+
+@keyframes brew-in {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(.9);
+    filter: blur(6px)
+  }
+
+  60% {
+    opacity: 1;
+    filter: blur(0)
+  }
+
+  100% {
+    transform: none
+  }
+}
+
+:root[data-vibe="witchy"] .item.brewed {
+  box-shadow: 0 0 0 2px var(--accent), 0 0 30px -4px color-mix(in srgb, var(--accent) 70%, transparent)
+}
+
 /* 5. Forsvinder i røg */
-.item.vanishing{animation:vanish .48s ease-in forwards;pointer-events:none}
-@keyframes vanish{to{opacity:0;transform:translateY(-18px) scale(.94);filter:blur(8px)}}
+.item.vanishing {
+  animation: vanish .48s ease-in forwards;
+  pointer-events: none
+}
+
+@keyframes vanish {
+  to {
+    opacity: 0;
+    transform: translateY(-18px) scale(.94);
+    filter: blur(8px)
+  }
+}
+
 /* 3. Ny nr. 1 i Top 3 */
 /* En lilla lysstribe glider fra venstre mod højre, som når lys rammer et blankt kort; kortet gløder lilla imens */
-.sheen{position:absolute;inset:0;border-radius:inherit;pointer-events:none;overflow:hidden}
-.sheen::before{content:"";position:absolute;top:-20%;bottom:-20%;left:-60%;width:55%;transform:skewX(-18deg);
-  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--accent) 35%,transparent) 30%,color-mix(in srgb,#F3E8FF 75%,transparent) 50%,color-mix(in srgb,var(--accent) 35%,transparent) 70%,transparent);
-  filter:blur(2px);animation:sheen 1.1s cubic-bezier(.4,0,.2,1) forwards}
-@keyframes sheen{to{left:120%}}
-.item.shining{animation:shine-glow 1.3s ease-out}
-@keyframes shine-glow{0%{box-shadow:0 0 0 0 transparent}35%{box-shadow:0 0 0 2px var(--accent),0 0 28px 2px color-mix(in srgb,var(--accent) 60%,transparent)}100%{box-shadow:0 0 0 0 transparent}}
+.sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden
+}
+
+.sheen::before {
+  content: "";
+  position: absolute;
+  top: -20%;
+  bottom: -20%;
+  left: -60%;
+  width: 55%;
+  transform: skewX(-18deg);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 35%, transparent) 30%, color-mix(in srgb, #F3E8FF 75%, transparent) 50%, color-mix(in srgb, var(--accent) 35%, transparent) 70%, transparent);
+  filter: blur(2px);
+  animation: sheen 1.1s cubic-bezier(.4, 0, .2, 1) forwards
+}
+
+@keyframes sheen {
+  to {
+    left: 120%
+  }
+}
+
+.item.shining {
+  animation: shine-glow 1.3s ease-out
+}
+
+@keyframes shine-glow {
+  0% {
+    box-shadow: 0 0 0 0 transparent
+  }
+
+  35% {
+    box-shadow: 0 0 0 2px var(--accent), 0 0 28px 2px color-mix(in srgb, var(--accent) 60%, transparent)
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent
+  }
+}
+
 /* Samme lysstribe over den nye nr. 1 i Top 3 */
-.menu li.crowned{border-radius:6px;background:linear-gradient(100deg,transparent 30%,color-mix(in srgb,#F3E8FF 55%,transparent) 50%,transparent 70%) no-repeat;background-size:250% 100%;background-position:120% 0;animation:sheen-li 1.1s cubic-bezier(.4,0,.2,1)}
-@keyframes sheen-li{from{background-position:120% 0}to{background-position:-60% 0}}
+.menu li.crowned {
+  border-radius: 6px;
+  background: linear-gradient(100deg, transparent 30%, color-mix(in srgb, #F3E8FF 55%, transparent) 50%, transparent 70%) no-repeat;
+  background-size: 250% 100%;
+  background-position: 120% 0;
+  animation: sheen-li 1.1s cubic-bezier(.4, 0, .2, 1)
+}
+
+@keyframes sheen-li {
+  from {
+    background-position: 120% 0
+  }
+
+  to {
+    background-position: -60% 0
+  }
+}
+
 /* 7. Fortryllelse ved skift til witchy mode */
 /* Siden forvandles inde i en voksende cirkel; standard-overgangen mellem gammel og ny side slås fra */
-::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
-::view-transition-new(root){z-index:2}
-.spell-out::view-transition-old(root){z-index:3} /* tilbage til standard: den heksede side ligger øverst og trækker sig sammen */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal
+}
+
+::view-transition-new(root) {
+  z-index: 2
+}
+
+.spell-out::view-transition-old(root) {
+  z-index: 3
+}
+
+/* tilbage til standard: den heksede side ligger øverst og trækker sig sammen */
 /* Bølgefronten: en gennemsigtig ring af lilla lys med en lys kant, som man kan se siden igennem */
-.magic-ring{position:fixed;z-index:72;pointer-events:none;border-radius:50%;
-  background:radial-gradient(circle,transparent 58%,rgba(185,155,227,.10) 66%,rgba(195,155,230,.32) 69.5%,rgba(240,225,255,.85) 70.5%,rgba(195,155,230,.3) 71.5%,transparent 76%);
-  filter:blur(1.5px) drop-shadow(0 0 12px rgba(181,123,234,.55))}
+.magic-ring {
+  position: fixed;
+  z-index: 72;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(circle, transparent 58%, rgba(185, 155, 227, .10) 66%, rgba(195, 155, 230, .32) 69.5%, rgba(240, 225, 255, .85) 70.5%, rgba(195, 155, 230, .3) 71.5%, transparent 76%);
+  filter: blur(1.5px) drop-shadow(0 0 12px rgba(181, 123, 234, .55))
+}
+
 /* Reserve for ældre browsere: et gennemsigtigt lilla slør i stedet for et dækkende */
-.magic{position:fixed;inset:0;z-index:70;pointer-events:none;
-  background:radial-gradient(circle at var(--x) var(--y),rgba(227,211,243,.35) 0%,rgba(185,155,227,.3) 30%,rgba(123,63,160,.28) 60%,rgba(59,39,86,.22) 100%)}
-@media (prefers-reduced-motion:reduce){.sky .star{animation:none;opacity:.6}}
-h1{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:clamp(2rem,6vw,2.9rem);line-height:1.05;margin:0 0 10px;letter-spacing:-.01em}
-:root[data-vibe="witchy"] h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:clamp(2.3rem,7vw,3.3rem);line-height:1;margin:0 0 12px;letter-spacing:-.005em}
-h1 .nowrap{white-space:nowrap}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 14px}
+.magic {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--x) var(--y), rgba(227, 211, 243, .35) 0%, rgba(185, 155, 227, .3) 30%, rgba(123, 63, 160, .28) 60%, rgba(59, 39, 86, .22) 100%)
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .sky .star {
+    animation: none;
+    opacity: .6
+  }
+}
+
+h1 {
+  font-family: "Gloock", Georgia, serif;
+  font-weight: 400;
+  font-size: clamp(2rem, 6vw, 2.9rem);
+  line-height: 1.05;
+  margin: 0 0 10px;
+  letter-spacing: -.01em
+}
+
+:root[data-vibe="witchy"] h1 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(2.3rem, 7vw, 3.3rem);
+  line-height: 1;
+  margin: 0 0 12px;
+  letter-spacing: -.005em
+}
+
+h1 .nowrap {
+  white-space: nowrap
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px
+}
+
 /* Easter egg 🤫: en helt usynlig knap, hvor Light mode-knappen sad */
-.egg{width:110px;height:32px;padding:0;border:0;background:transparent;opacity:0;cursor:default;-webkit-tap-highlight-color:transparent}
+.egg {
+  width: 110px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  cursor: default;
+  -webkit-tap-highlight-color: transparent
+}
+
 /* Easter egget hører kun til witchy mode */
-:root:not([data-vibe="witchy"]) .egg,:root:not([data-vibe="witchy"]) .egg-hint{display:none}
+:root:not([data-vibe="witchy"]) .egg,
+:root:not([data-vibe="witchy"]) .egg-hint {
+  display: none
+}
+
 /* En gang imellem glimter en stjerne kort over easter egget (se app.js). Den er lidt tydeligere end himlens stjerner. */
-.topbar{position:relative}
-.egg-hint{position:absolute;right:44px;top:50%;margin-top:-.5em;font-size:22px;line-height:1;color:#FFF3C4;opacity:0;pointer-events:none;
-  text-shadow:0 0 3px #fff,0 0 8px var(--gold),0 0 18px var(--gold),0 0 30px color-mix(in srgb,var(--accent) 80%,transparent)}
+.topbar {
+  position: relative
+}
+
+.egg-hint {
+  position: absolute;
+  right: 44px;
+  top: 50%;
+  margin-top: -.5em;
+  font-size: 22px;
+  line-height: 1;
+  color: #FFF3C4;
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: 0 0 3px #fff, 0 0 8px var(--gold), 0 0 18px var(--gold), 0 0 30px color-mix(in srgb, var(--accent) 80%, transparent)
+}
+
 /* Lysstråler på kryds, som et glimt i en linse; de drejer med stjernen */
-.egg-hint::before,.egg-hint::after{content:"";position:absolute;left:50%;top:50%;border-radius:2px;
-  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--gold) 85%,transparent) 35%,#fff 50%,color-mix(in srgb,var(--gold) 85%,transparent) 65%,transparent)}
-.egg-hint::before{width:56px;height:1.5px;margin:-.75px 0 0 -28px}
-.egg-hint::after{width:1.5px;height:40px;margin:-20px 0 0 -.75px;background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--gold) 85%,transparent) 35%,#fff 50%,color-mix(in srgb,var(--gold) 85%,transparent) 65%,transparent)}
+.egg-hint::before,
+.egg-hint::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 85%, transparent) 35%, #fff 50%, color-mix(in srgb, var(--gold) 85%, transparent) 65%, transparent)
+}
+
+.egg-hint::before {
+  width: 56px;
+  height: 1.5px;
+  margin: -.75px 0 0 -28px
+}
+
+.egg-hint::after {
+  width: 1.5px;
+  height: 40px;
+  margin: -20px 0 0 -.75px;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--gold) 85%, transparent) 35%, #fff 50%, color-mix(in srgb, var(--gold) 85%, transparent) 65%, transparent)
+}
+
 /* Under easter egget lægger stjernerne sig over siden, så hjertet kan ses */
-.egg-dim{position:fixed;inset:0;z-index:80;pointer-events:none;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
-.easter .sky{z-index:81}
+.egg-dim {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px)
+}
+
+.easter .sky {
+  z-index: 81
+}
+
 /* Stjernerne i hjertet blinker ikke: ellers lader Safari blinke-animationen tage over, når de er fløjet på plads,
    så de hopper tilbage på himlen, og hjertet forsvinder */
-.sky .star.in-heart{animation:none;opacity:1;box-shadow:0 0 6px 2px var(--accent)}
-.sky .star.gold.in-heart{box-shadow:0 0 6px 2px var(--gold)}
-.egg-shoot{position:fixed;z-index:83;width:170px;height:3px;margin:-1.5px 0 0 -170px;border-radius:3px;pointer-events:none;transform-origin:right center;
-  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--gold) 80%,transparent) 65%,#fff);filter:drop-shadow(0 0 6px var(--gold))}
-.egg-spark{z-index:85}
-.egg-text{position:fixed;z-index:84;pointer-events:none;white-space:nowrap;padding:60px 80px; /* luft, så gløden ikke skæres af masken i en firkant */font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:700;
-  font-size:clamp(2.4rem,10vw,4.2rem);color:#F6EEFF;text-shadow:0 0 2px #fff,0 0 12px var(--accent),0 0 29px var(--accent)}
-.vibe{font:inherit;font-size:.82rem;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 12px;margin:0;cursor:pointer}
-.vibe:hover{color:var(--accent);border-color:var(--accent)}
-h1 .h1-emoji{font-size:.75em}
-.lede{color:var(--muted);margin:0 0 6px}
-.lede-end{display:inline-block;margin-top:6px;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:700;font-size:1.25em;color:var(--accent)}
-.sync{font-size:.82rem;color:var(--muted);margin:0 0 26px}
+.sky .star.in-heart {
+  animation: none;
+  opacity: 1;
+  box-shadow: 0 0 6px 2px var(--accent)
+}
+
+.sky .star.gold.in-heart {
+  box-shadow: 0 0 6px 2px var(--gold)
+}
+
+.egg-shoot {
+  position: fixed;
+  z-index: 83;
+  width: 170px;
+  height: 3px;
+  margin: -1.5px 0 0 -170px;
+  border-radius: 3px;
+  pointer-events: none;
+  transform-origin: right center;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--gold) 80%, transparent) 65%, #fff);
+  filter: drop-shadow(0 0 6px var(--gold))
+}
+
+.egg-spark {
+  z-index: 85
+}
+
+.egg-text {
+  position: fixed;
+  z-index: 84;
+  pointer-events: none;
+  white-space: nowrap;
+  padding: 60px 80px;
+  /* luft, så gløden ikke skæres af masken i en firkant */
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: clamp(2.4rem, 10vw, 4.2rem);
+  color: #F6EEFF;
+  text-shadow: 0 0 2px #fff, 0 0 12px var(--accent), 0 0 29px var(--accent)
+}
+
+.vibe {
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  margin: 0;
+  cursor: pointer
+}
+
+.vibe:hover {
+  color: var(--accent);
+  border-color: var(--accent)
+}
+
+h1 .h1-emoji {
+  font-size: .75em
+}
+
+.lede {
+  color: var(--muted);
+  margin: 0 0 6px
+}
+
+.lede-end {
+  display: inline-block;
+  margin-top: 6px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 1.25em;
+  color: var(--accent)
+}
+
+.sync {
+  font-size: .82rem;
+  color: var(--muted);
+  margin: 0 0 26px
+}
+
+/* "Afbryd forbindelse" lige under "Synkroniseret …"; vises kun, når der er skrevet en kode */
+.del.afbryd {
+  display: block;
+  margin: -22px 0 26px
+}
+
+.del.afbryd[hidden] {
+  display: none
+}
+
+/* Gæstevisning: kun standard mode, ingen knapper til at ændre noget, og en tekst til familien */
+.gaest-lede {
+  display: none
+}
+
+.gaest .gaest-lede {
+  display: block
+}
+
+.gaest .lede.std,
+.gaest .lede.witch,
+.gaest .vibe,
+.uden-kode .vibe,
+.gaest .egg,
+.gaest .egg-hint,
+.gaest .filters {
+  display: none
+}
+
+.gaest-item .heart {
+  cursor: default
+}
+
+.gaest-note {
+  white-space: pre-line;
+  margin: 10px 0 0;
+  font-size: .9rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px
+}
+
+.gaest-note::before {
+  content: "Noter: ";
+  font-weight: 600;
+  color: var(--muted)
+}
 
 /* Menu: the current winners */
-.menu{background:var(--pine);color:var(--menu-ink);border-radius:18px;padding:20px 20px 8px;margin-bottom:26px}
-.menu h2{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:1.45rem;margin:0 0 4px}
-:root[data-vibe="witchy"] .menu{box-shadow:0 10px 30px -14px color-mix(in srgb,var(--accent) 60%,transparent)}
-:root[data-vibe="witchy"] .menu h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:1.7rem;line-height:1.1}
-:root[data-vibe="witchy"] .menu h2::before{content:"✦ ";color:var(--gold)}
-.menu p.sub{margin:0 0 14px;opacity:.82;font-size:.92rem}
-.menu dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:0 16px}
-.menu dt,.menu dd{padding:9px 0;border-top:1px solid color-mix(in srgb,currentColor 22%,transparent);margin:0}
-.menu dt{font-weight:600;white-space:nowrap}
-.menu dd{opacity:.95}
-.menu dd.empty{opacity:.6;font-style:italic}
-.menu ol{margin:0;padding-left:1.3em}
-.menu li+li{margin-top:2px}
-.menu .score{margin-left:8px;white-space:nowrap;opacity:.85;font-size:.9em}
-.menu .score svg{width:1em;height:1em;vertical-align:-.15em;margin-right:2px}
-.menu .leader{display:none}
+.menu {
+  background: var(--pine);
+  color: var(--menu-ink);
+  border-radius: 18px;
+  padding: 20px 20px 8px;
+  margin-bottom: 26px
+}
+
+.menu h2 {
+  font-family: "Gloock", Georgia, serif;
+  font-weight: 400;
+  font-size: 1.45rem;
+  margin: 0 0 4px
+}
+
+:root[data-vibe="witchy"] .menu {
+  box-shadow: 0 10px 30px -14px color-mix(in srgb, var(--accent) 60%, transparent)
+}
+
+:root[data-vibe="witchy"] .menu h2 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 700;
+  font-size: 1.7rem;
+  line-height: 1.1
+}
+
+:root[data-vibe="witchy"] .menu h2::before {
+  content: "✦ ";
+  color: var(--gold)
+}
+
+.menu p.sub {
+  margin: 0 0 14px;
+  opacity: .82;
+  font-size: .92rem
+}
+
+.menu dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 16px
+}
+
+.menu dt,
+.menu dd {
+  padding: 9px 0;
+  border-top: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  margin: 0
+}
+
+.menu dt {
+  font-weight: 600;
+  white-space: nowrap
+}
+
+.menu dd {
+  opacity: .95
+}
+
+.menu dd.empty {
+  opacity: .6;
+  font-style: italic
+}
+
+.menu ol {
+  margin: 0;
+  padding-left: 1.3em
+}
+
+.menu li+li {
+  margin-top: 2px
+}
+
+.menu .score {
+  margin-left: 8px;
+  white-space: nowrap;
+  opacity: .85;
+  font-size: .9em
+}
+
+.menu .score svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: -.15em;
+  margin-right: 2px
+}
+
+.menu .leader {
+  display: none
+}
 
 /* Witchy: Top 3 som en side i en gammel opskriftsbog. Ramme, ornamenter, romertal og prikker,
    men stadig med almindelig skrift til drikkenes navne, så det er nemt at læse. */
-:root[data-vibe="witchy"] .menu{position:relative;padding:24px 22px 12px;
-  background:radial-gradient(ellipse at 50% 0%,color-mix(in srgb,#fff 7%,transparent),transparent 60%),radial-gradient(ellipse at 50% 120%,color-mix(in srgb,#000 12%,transparent),transparent 60%),var(--pine)}
-:root[data-vibe="witchy"] .menu::before{content:"";position:absolute;inset:7px;border:1px solid color-mix(in srgb,var(--menu-gold) 55%,transparent);border-radius:13px;pointer-events:none}
-:root[data-vibe="witchy"] .menu::after{content:"✦";position:absolute;top:1px;left:50%;transform:translateX(-50%);padding:0 8px;font-size:.75rem;line-height:1;color:var(--menu-gold);background:var(--pine)}
-:root[data-vibe="witchy"] .menu h2{text-align:center;font-size:1.85rem}
-:root[data-vibe="witchy"] .menu h2::before{content:"✦ "}
-:root[data-vibe="witchy"] .menu h2::after{content:" ✦";color:var(--gold)}
-:root[data-vibe="witchy"] .menu p.sub{text-align:center;font-style:italic;margin-bottom:4px}
-:root[data-vibe="witchy"] .menu p.sub::after{content:"—— ✧ ——";display:block;margin-top:6px;color:var(--menu-gold);font-style:normal;letter-spacing:.2em;font-size:.8rem;opacity:.9}
-:root[data-vibe="witchy"] .menu dt,:root[data-vibe="witchy"] .menu dd{border-top:1px dashed color-mix(in srgb,var(--menu-gold) 45%,transparent)}
-:root[data-vibe="witchy"] .menu dl > dt:first-of-type,:root[data-vibe="witchy"] .menu dl > dt:first-of-type + dd{border-top:0}
-:root[data-vibe="witchy"] .menu dt{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:1.15rem;font-variant:small-caps;letter-spacing:.03em;line-height:1.3}
+:root[data-vibe="witchy"] .menu {
+  position: relative;
+  padding: 24px 22px 12px;
+  background: radial-gradient(ellipse at 50% 0%, color-mix(in srgb, #fff 7%, transparent), transparent 60%), radial-gradient(ellipse at 50% 120%, color-mix(in srgb, #000 12%, transparent), transparent 60%), var(--pine)
+}
+
+:root[data-vibe="witchy"] .menu::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border: 1px solid color-mix(in srgb, var(--menu-gold) 55%, transparent);
+  border-radius: 13px;
+  pointer-events: none
+}
+
+:root[data-vibe="witchy"] .menu::after {
+  content: "✦";
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0 8px;
+  font-size: .75rem;
+  line-height: 1;
+  color: var(--menu-gold);
+  background: var(--pine)
+}
+
+:root[data-vibe="witchy"] .menu h2 {
+  text-align: center;
+  font-size: 1.85rem
+}
+
+:root[data-vibe="witchy"] .menu h2::before {
+  content: "✦ "
+}
+
+:root[data-vibe="witchy"] .menu h2::after {
+  content: " ✦";
+  color: var(--gold)
+}
+
+:root[data-vibe="witchy"] .menu p.sub {
+  text-align: center;
+  font-style: italic;
+  margin-bottom: 4px
+}
+
+:root[data-vibe="witchy"] .menu p.sub::after {
+  content: "—— ✧ ——";
+  display: block;
+  margin-top: 6px;
+  color: var(--menu-gold);
+  font-style: normal;
+  letter-spacing: .2em;
+  font-size: .8rem;
+  opacity: .9
+}
+
+:root[data-vibe="witchy"] .menu dt,
+:root[data-vibe="witchy"] .menu dd {
+  border-top: 1px dashed color-mix(in srgb, var(--menu-gold) 45%, transparent)
+}
+
+:root[data-vibe="witchy"] .menu dl>dt:first-of-type,
+:root[data-vibe="witchy"] .menu dl>dt:first-of-type+dd {
+  border-top: 0
+}
+
+:root[data-vibe="witchy"] .menu dt {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 700;
+  font-size: 1.15rem;
+  font-variant: small-caps;
+  letter-spacing: .03em;
+  line-height: 1.3
+}
+
 /* Romertallene står centreret i en fast kolonne, så bred som "III.", så alle navne starter samme sted */
-:root[data-vibe="witchy"] .menu ol{list-style:none;padding-left:0;counter-reset:top}
-:root[data-vibe="witchy"] .menu li{display:flex;align-items:baseline;counter-increment:top}
-:root[data-vibe="witchy"] .menu li::before{content:counter(top, upper-roman) ".";flex:0 0 2.4em;text-align:center;margin-right:4px;font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;color:var(--menu-gold)}
-:root[data-vibe="witchy"] .menu .top-row{display:flex;align-items:baseline;flex:1;min-width:0}
-:root[data-vibe="witchy"] .menu .leader{display:block;flex:1;min-width:14px;margin:0 6px;border-bottom:1.5px dotted color-mix(in srgb,currentColor 40%,transparent);transform:translateY(-.3em)}
-:root[data-vibe="witchy"] .menu .score{margin-left:0;font-weight:600}
-:root[data-vibe="witchy"] .menu dd.empty{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.05rem}
+:root[data-vibe="witchy"] .menu ol {
+  list-style: none;
+  padding-left: 0;
+  counter-reset: top
+}
+
+:root[data-vibe="witchy"] .menu li {
+  display: flex;
+  align-items: baseline;
+  counter-increment: top
+}
+
+:root[data-vibe="witchy"] .menu li::before {
+  content: counter(top, upper-roman) ".";
+  flex: 0 0 2.4em;
+  text-align: center;
+  margin-right: 4px;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 700;
+  color: var(--menu-gold)
+}
+
+:root[data-vibe="witchy"] .menu .top-row {
+  display: flex;
+  align-items: baseline;
+  flex: 1;
+  min-width: 0
+}
+
+:root[data-vibe="witchy"] .menu .leader {
+  display: block;
+  flex: 1;
+  min-width: 14px;
+  margin: 0 6px;
+  border-bottom: 1.5px dotted color-mix(in srgb, currentColor 40%, transparent);
+  transform: translateY(-.3em)
+}
+
+:root[data-vibe="witchy"] .menu .score {
+  margin-left: 0;
+  font-weight: 600
+}
+
+:root[data-vibe="witchy"] .menu dd.empty {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.05rem
+}
 
 /* Sticky tabs */
-.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding:10px 0;margin:0 -18px;padding-left:18px;padding-right:18px;overflow-x:auto;display:flex;gap:8px;scrollbar-width:none}
-.tabs::-webkit-scrollbar{display:none}
+.tabs {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 5;
+  background: var(--bg);
+  padding: 10px 0;
+  margin: 0 -18px;
+  padding-left: 18px;
+  padding-right: 18px;
+  overflow-x: auto;
+  display: flex;
+  gap: 8px;
+  scrollbar-width: none
+}
+
+.tabs::-webkit-scrollbar {
+  display: none
+}
+
 /* På pc kan man trække i fanerne med musen, ligesom man swiper på en mobil */
-@media (hover:hover) and (pointer:fine){.tabs{cursor:grab;user-select:none}}
-.tabs.dragging,.tabs.dragging .tab{cursor:grabbing}
+@media (hover:hover) and (pointer:fine) {
+  .tabs {
+    cursor: grab;
+    user-select: none
+  }
+}
+
+.tabs.dragging,
+.tabs.dragging .tab {
+  cursor: grabbing
+}
+
 /* Hold nede på en fane: fanerne ryster og kan trækkes. Langt tryk må ikke åbne telefonens menu eller markere tekst. */
-.tab.cat{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-.tabs.arranging .tab:not(.cat){opacity:.35;pointer-events:none}
-.tabs.arranging .tab.cat{touch-action:pan-x;cursor:grab} /* man kan stadig rulle fanerækken */
-.tab.jiggle{animation:jiggle .26s ease-in-out infinite alternate}
-.tab.jiggle:nth-child(even){animation-delay:-.13s;animation-direction:alternate-reverse}
-@keyframes jiggle{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
+.tab.cat {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none
+}
+
+.tabs.arranging .tab:not(.cat) {
+  opacity: .35;
+  pointer-events: none
+}
+
+.tabs.arranging .tab.cat {
+  touch-action: pan-x;
+  cursor: grab
+}
+
+/* man kan stadig rulle fanerækken */
+.tab.jiggle {
+  animation: jiggle .26s ease-in-out infinite alternate
+}
+
+.tab.jiggle:nth-child(even) {
+  animation-delay: -.13s;
+  animation-direction: alternate-reverse
+}
+
+@keyframes jiggle {
+  from {
+    transform: rotate(-2deg)
+  }
+
+  to {
+    transform: rotate(2deg)
+  }
+}
+
 /* Når man har fat i en fane, får den et tydeligt omrids.
    Fanerækken skærer alt af, der stikker mere end ca. 10px ud, så skygge og glød holdes inden for det. */
-.tab.lifted{animation:none;position:relative;z-index:3;cursor:grabbing;outline:2px solid var(--ink);outline-offset:2px;box-shadow:0 3px 7px -2px color-mix(in srgb,var(--ink) 45%,transparent)}
-:root[data-vibe="witchy"] .tab.lifted{outline:none;box-shadow:0 0 0 2px var(--accent),0 0 6px 0 color-mix(in srgb,var(--accent) 65%,transparent)} /* i witchy er den lilla ramme nok */
-@media (prefers-reduced-motion:reduce){.tab.jiggle{animation:none;outline:1px dashed var(--muted)}}
-.tab.edit{cursor:text;user-select:text;border-style:dashed;border-color:var(--muted)}
-.tab.rediger{color:var(--muted)}
-.tab.slet{border-color:var(--accent);color:var(--accent)}
-.tab.rediger[aria-pressed="true"]{color:var(--bg)}
-.tab{flex:0 0 auto;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:600;font-size:.92rem;padding:8px 14px;border-radius:999px;cursor:pointer}
-.tab[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.tab.ny{border-style:dashed;color:var(--muted)}
-.tab.ny[aria-pressed="true"]{color:var(--bg)}
-.tab .n{font-weight:500;opacity:.65;margin-left:4px}
-.filters{display:flex;gap:16px;margin:8px 0 18px;font-size:.9rem;color:var(--muted)}
-.filters label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.tab.lifted {
+  animation: none;
+  position: relative;
+  z-index: 3;
+  cursor: grabbing;
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: 0 3px 7px -2px color-mix(in srgb, var(--ink) 45%, transparent)
+}
+
+:root[data-vibe="witchy"] .tab.lifted {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent), 0 0 6px 0 color-mix(in srgb, var(--accent) 65%, transparent)
+}
+
+/* i witchy er den lilla ramme nok */
+@media (prefers-reduced-motion:reduce) {
+  .tab.jiggle {
+    animation: none;
+    outline: 1px dashed var(--muted)
+  }
+}
+
+.tab.edit {
+  cursor: text;
+  user-select: text;
+  border-style: dashed;
+  border-color: var(--muted)
+}
+
+.tab.rediger {
+  color: var(--muted)
+}
+
+.tab.slet {
+  border-color: var(--accent);
+  color: var(--accent)
+}
+
+.tab.rediger[aria-pressed="true"] {
+  color: var(--bg)
+}
+
+.tab {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  font-size: .92rem;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer
+}
+
+.tab[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink)
+}
+
+.tab.ny {
+  border-style: dashed;
+  color: var(--muted)
+}
+
+.tab.ny[aria-pressed="true"] {
+  color: var(--bg)
+}
+
+.tab .n {
+  font-weight: 500;
+  opacity: .65;
+  margin-left: 4px
+}
+
+.filters {
+  display: flex;
+  gap: 16px;
+  margin: 8px 0 18px;
+  font-size: .9rem;
+  color: var(--muted)
+}
+
+.filters label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  cursor: pointer
+}
+
 /* Witchy: filteret bliver en lille amuletknap; afkrydsningen er en cirkel, der tændes med en gylden stjerne */
-:root[data-vibe="witchy"] .filters label{gap:8px;padding:5px 14px 5px 7px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-weight:600;transition:border-color .25s,color .25s,box-shadow .25s}
-:root[data-vibe="witchy"] .filters input{appearance:none;-webkit-appearance:none;margin:0;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--accent);background:transparent;display:grid;place-items:center;cursor:pointer;transition:background .25s,box-shadow .25s}
-:root[data-vibe="witchy"] .filters input::after{content:"✦";color:var(--gold);font-size:12px;line-height:1;transform:scale(0) rotate(-90deg);transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
-:root[data-vibe="witchy"] .filters input:checked{background:var(--pine);box-shadow:0 0 10px 1px color-mix(in srgb,var(--accent) 50%,transparent)}
-:root[data-vibe="witchy"] .filters input:checked::after{transform:scale(1) rotate(0)}
-:root[data-vibe="witchy"] .filters label:has(input:checked){border-color:var(--accent);color:var(--accent);box-shadow:0 0 16px -4px color-mix(in srgb,var(--accent) 60%,transparent)}
-:root[data-vibe="witchy"] .filters input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+:root[data-vibe="witchy"] .filters label {
+  gap: 8px;
+  padding: 5px 14px 5px 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 600;
+  transition: border-color .25s, color .25s, box-shadow .25s
+}
 
-.cat-head{margin:6px 0 12px}
-.cat-head h2{font-family:"Gloock",Georgia,serif;font-weight:400;font-size:1.6rem;margin:0}
-:root[data-vibe="witchy"] .cat-head h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:1.9rem;line-height:1.1}
-.cat-head p{margin:2px 0 0;color:var(--muted);font-size:.92rem}
+:root[data-vibe="witchy"] .filters input {
+  appearance: none;
+  -webkit-appearance: none;
+  margin: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  background: transparent;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: background .25s, box-shadow .25s
+}
 
-.item{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px}
-.item.tried{border-left:4px solid var(--pine)}
+:root[data-vibe="witchy"] .filters input::after {
+  content: "✦";
+  color: var(--gold);
+  font-size: 12px;
+  line-height: 1;
+  transform: scale(0) rotate(-90deg);
+  transition: transform .35s cubic-bezier(.3, 1.6, .5, 1)
+}
+
+:root[data-vibe="witchy"] .filters input:checked {
+  background: var(--pine);
+  box-shadow: 0 0 10px 1px color-mix(in srgb, var(--accent) 50%, transparent)
+}
+
+:root[data-vibe="witchy"] .filters input:checked::after {
+  transform: scale(1) rotate(0)
+}
+
+:root[data-vibe="witchy"] .filters label:has(input:checked) {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 16px -4px color-mix(in srgb, var(--accent) 60%, transparent)
+}
+
+:root[data-vibe="witchy"] .filters input:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px
+}
+
+.cat-head {
+  margin: 6px 0 12px
+}
+
+.cat-head h2 {
+  font-family: "Gloock", Georgia, serif;
+  font-weight: 400;
+  font-size: 1.6rem;
+  margin: 0
+}
+
+:root[data-vibe="witchy"] .cat-head h2 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 700;
+  font-size: 1.9rem;
+  line-height: 1.1
+}
+
+.cat-head p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: .92rem
+}
+
+.item {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px
+}
+
+.item.tried {
+  border-left: 4px solid var(--pine)
+}
 
 /* Sortering efter vurdering. Kort, der stiger, lyser op og ligger over de andre, mens de glider. */
-.item{position:relative}
-.item.rising{z-index:2;box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 55%,transparent),0 14px 34px -10px color-mix(in srgb,var(--accent) 55%,transparent)}
-.item.sinking{opacity:.75}
-:root[data-vibe="witchy"] .item.rising{box-shadow:0 0 0 2px var(--accent),0 0 26px 2px color-mix(in srgb,var(--accent) 55%,transparent),0 0 60px 6px color-mix(in srgb,var(--gold) 25%,transparent)}
-:root[data-vibe="witchy"] .item.rising::after{content:"✦";position:absolute;top:-10px;right:14px;color:var(--gold);font-size:1.2rem;animation:sparkle .9s ease-out forwards;pointer-events:none}
-:root[data-vibe="witchy"] .item.rising::before{content:"✧";position:absolute;bottom:-8px;left:22px;color:var(--accent);font-size:.95rem;animation:sparkle .9s .15s ease-out forwards;opacity:0;pointer-events:none}
-@keyframes sparkle{0%{opacity:0;transform:scale(.4) rotate(0)}35%{opacity:1;transform:scale(1.2) rotate(40deg)}100%{opacity:0;transform:scale(.6) rotate(110deg) translateY(-8px)}}
-@media (prefers-reduced-motion:reduce){:root[data-vibe="witchy"] .item.rising::after,:root[data-vibe="witchy"] .item.rising::before{animation:none}}
-.row{display:flex;gap:12px;align-items:flex-start}
-.body{flex:1;min-width:0}
-.name{font-weight:700;margin:0;font-size:1.02rem}
-.desc{margin:2px 0 0;color:var(--muted);font-size:.92rem}
-.how{white-space:pre-line;margin:6px 0 0;font-size:.88rem;background:var(--pine-soft);border-radius:8px;padding:6px 10px}
-.foot{margin-top:4px}
-.rate{display:flex;align-items:center;gap:0;margin-top:10px;flex-wrap:wrap}
-.rate span.lbl{flex-basis:100%;font-size:.85rem;color:var(--muted);margin-bottom:2px}
-.heart{flex:1 1 0;min-width:0;border:0;background:none;padding:2px;cursor:pointer;color:var(--line);line-height:0;display:flex;justify-content:center}
-.heart svg{width:100%;max-width:40px;height:auto;aspect-ratio:1}
-.heart.on{color:var(--accent)}
-:root[data-vibe="witchy"] .heart.on svg{filter:drop-shadow(0 0 4px color-mix(in srgb,var(--accent) 45%,transparent))}
-/* Hold nede på et kort for at rette navn og "Sådan". Langt tryk må ikke markere tekst eller åbne telefonens menu. */
-.item .body{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-.item.editing{outline:2px dashed var(--accent);outline-offset:2px}
-.edit-hint{margin:0 0 6px;font-size:.8rem;color:var(--accent)}
-.item-edit{display:block;width:100%;margin-top:6px;font:inherit;font-size:.92rem;color:var(--ink);background:var(--surface);border:1px dashed var(--muted);border-radius:10px;padding:8px 10px;resize:vertical}
-input.item-edit{font-weight:700;font-size:1.02rem;margin-top:0}
-.sub-edit{display:block;width:100%;margin-top:6px;font:inherit;font-size:.92rem;color:var(--ink);background:var(--surface);border:1px dashed var(--muted);border-radius:10px;padding:8px 10px;resize:vertical}
-.note{width:100%;margin-top:10px;font:inherit;font-size:.92rem;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px;resize:vertical;min-height:40px}
-.del{border:0;background:none;color:var(--muted);font:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline;padding:0;margin-top:8px}
-.empty-state{color:var(--muted);padding:18px 4px}
+.item {
+  position: relative
+}
 
-.add{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
-.add[hidden]{display:none}
-.add.kode{margin:-14px 0 26px}
-.add input,.add textarea{flex:1 1 220px;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.item.rising {
+  z-index: 2;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 55%, transparent), 0 14px 34px -10px color-mix(in srgb, var(--accent) 55%, transparent)
+}
+
+.item.sinking {
+  opacity: .75
+}
+
+:root[data-vibe="witchy"] .item.rising {
+  box-shadow: 0 0 0 2px var(--accent), 0 0 26px 2px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 60px 6px color-mix(in srgb, var(--gold) 25%, transparent)
+}
+
+:root[data-vibe="witchy"] .item.rising::after {
+  content: "✦";
+  position: absolute;
+  top: -10px;
+  right: 14px;
+  color: var(--gold);
+  font-size: 1.2rem;
+  animation: sparkle .9s ease-out forwards;
+  pointer-events: none
+}
+
+:root[data-vibe="witchy"] .item.rising::before {
+  content: "✧";
+  position: absolute;
+  bottom: -8px;
+  left: 22px;
+  color: var(--accent);
+  font-size: .95rem;
+  animation: sparkle .9s .15s ease-out forwards;
+  opacity: 0;
+  pointer-events: none
+}
+
+@keyframes sparkle {
+  0% {
+    opacity: 0;
+    transform: scale(.4) rotate(0)
+  }
+
+  35% {
+    opacity: 1;
+    transform: scale(1.2) rotate(40deg)
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(.6) rotate(110deg) translateY(-8px)
+  }
+}
+
+@media (prefers-reduced-motion:reduce) {
+
+  :root[data-vibe="witchy"] .item.rising::after,
+  :root[data-vibe="witchy"] .item.rising::before {
+    animation: none
+  }
+}
+
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start
+}
+
+.body {
+  flex: 1;
+  min-width: 0
+}
+
+.name {
+  font-weight: 700;
+  margin: 0;
+  font-size: 1.02rem
+}
+
+.desc {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: .92rem
+}
+
+.how {
+  white-space: pre-line;
+  margin: 6px 0 0;
+  font-size: .88rem;
+  background: var(--pine-soft);
+  border-radius: 8px;
+  padding: 6px 10px
+}
+
+.foot {
+  margin-top: 4px
+}
+
+.rate {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-top: 10px;
+  flex-wrap: wrap
+}
+
+.rate span.lbl {
+  flex-basis: 100%;
+  font-size: .85rem;
+  color: var(--muted);
+  margin-bottom: 2px
+}
+
+.heart {
+  flex: 1 1 0;
+  min-width: 0;
+  border: 0;
+  background: none;
+  padding: 2px;
+  cursor: pointer;
+  color: var(--line);
+  line-height: 0;
+  display: flex;
+  justify-content: center
+}
+
+.heart svg {
+  width: 100%;
+  max-width: 40px;
+  height: auto;
+  aspect-ratio: 1
+}
+
+.heart.on {
+  color: var(--accent)
+}
+
+:root[data-vibe="witchy"] .heart.on svg {
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 45%, transparent))
+}
+
+/* Hold nede på et kort for at rette navn og "Sådan". Langt tryk må ikke markere tekst eller åbne telefonens menu. */
+.item .body {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none
+}
+
+.item.editing {
+  outline: 2px dashed var(--accent);
+  outline-offset: 2px
+}
+
+.edit-hint {
+  margin: 0 0 6px;
+  font-size: .8rem;
+  color: var(--accent)
+}
+
+.item-edit {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  font: inherit;
+  font-size: .92rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px dashed var(--muted);
+  border-radius: 10px;
+  padding: 8px 10px;
+  resize: vertical
+}
+
+input.item-edit {
+  font-weight: 700;
+  font-size: 1.02rem;
+  margin-top: 0
+}
+
+.sub-edit {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  font: inherit;
+  font-size: .92rem;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px dashed var(--muted);
+  border-radius: 10px;
+  padding: 8px 10px;
+  resize: vertical
+}
+
+.note {
+  width: 100%;
+  margin-top: 10px;
+  font: inherit;
+  font-size: .92rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+  resize: vertical;
+  min-height: 40px
+}
+
+.del {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: .82rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-top: 8px
+}
+
+.empty-state {
+  color: var(--muted);
+  padding: 18px 4px
+}
+
+.add {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap
+}
+
+.add[hidden] {
+  display: none
+}
+
+.add.kode {
+  margin: -14px 0 26px
+}
+
+.add input,
+.add textarea {
+  flex: 1 1 220px;
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink)
+}
+
 /* Samlet boks med felterne under hinanden og knappen i fuld bredde nederst */
-.add.stack{flex-direction:column;align-items:stretch;gap:8px;margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px}
-.add.stack input,.add.stack textarea{flex:none;background:var(--bg)}
-.add.stack textarea{resize:vertical;min-height:76px}
-.add.stack .btn{width:100%}
-.btn{font:inherit;font-weight:600;padding:10px 16px;border-radius:10px;border:0;background:var(--accent);color:var(--surface);cursor:pointer}
-:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-footer{margin-top:40px;font-size:.85rem;color:var(--muted)}
-@media (max-width:480px){.menu dl{grid-template-columns:1fr}.menu dd{border-top:0;padding-top:0}}
+.add.stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px
+}
+
+.add.stack input,
+.add.stack textarea {
+  flex: none;
+  background: var(--bg)
+}
+
+.add.stack textarea {
+  resize: vertical;
+  min-height: 76px
+}
+
+.add.stack .btn {
+  width: 100%
+}
+
+.btn {
+  font: inherit;
+  font-weight: 600;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 0;
+  background: var(--accent);
+  color: var(--surface);
+  cursor: pointer
+}
+
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px
+}
+
+footer {
+  margin-top: 40px;
+  font-size: .85rem;
+  color: var(--muted)
+}
+
+@media (max-width:480px) {
+  .menu dl {
+    grid-template-columns: 1fr
+  }
+
+  .menu dd {
+    border-top: 0;
+    padding-top: 0
+  }
+}
 
 /* Witchy: "Welcome back"-popup og flagermus */
-.welcome{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:24px;background:color-mix(in srgb,var(--bg) 55%,transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:welcome-in .35s ease-out}
-.welcome-card{width:min(360px,100%);text-align:center;background:var(--surface);color:var(--ink);border:1px solid color-mix(in srgb,var(--accent) 45%,var(--line));border-radius:20px;padding:26px 22px 22px;
-  box-shadow:0 0 0 1px color-mix(in srgb,var(--gold) 20%,transparent),0 20px 60px -18px color-mix(in srgb,var(--accent) 70%,transparent),0 0 80px -20px color-mix(in srgb,var(--gold) 45%,transparent);
-  animation:welcome-card-in .45s cubic-bezier(.2,1.3,.4,1)}
-.welcome-moon{font-size:2.2rem;line-height:1;color:var(--gold);margin-bottom:6px;text-shadow:0 0 18px color-mix(in srgb,var(--gold) 60%,transparent);animation:moon-glow 2.6s ease-in-out infinite alternate}
-.welcome h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:2rem;line-height:1.1;margin:0 0 8px}
-.welcome p{margin:0 0 18px;color:var(--muted)}
-.welcome .btn{width:100%;padding:12px 16px;font-size:1rem}
-.welcome.closing{animation:welcome-out .3s ease-in forwards}
-.welcome.closing .welcome-card{animation:welcome-card-out .38s ease-in forwards;position:relative;overflow:hidden}
+.welcome {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  animation: welcome-in .35s ease-out
+}
+
+.welcome-card {
+  width: min(360px, 100%);
+  text-align: center;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--line));
+  border-radius: 20px;
+  padding: 26px 22px 22px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 20%, transparent), 0 20px 60px -18px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 80px -20px color-mix(in srgb, var(--gold) 45%, transparent);
+  animation: welcome-card-in .45s cubic-bezier(.2, 1.3, .4, 1)
+}
+
+.welcome-moon {
+  font-size: 2.2rem;
+  line-height: 1;
+  color: var(--gold);
+  margin-bottom: 6px;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--gold) 60%, transparent);
+  animation: moon-glow 2.6s ease-in-out infinite alternate
+}
+
+.welcome h2 {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1.1;
+  margin: 0 0 8px
+}
+
+.welcome p {
+  margin: 0 0 18px;
+  color: var(--muted)
+}
+
+.welcome .btn {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1rem
+}
+
+.welcome.closing {
+  animation: welcome-out .3s ease-in forwards
+}
+
+.welcome.closing .welcome-card {
+  animation: welcome-card-out .38s ease-in forwards;
+  position: relative;
+  overflow: hidden
+}
+
 /* Når den lukker, bliver kortet til en mørk hulemunding, som flagermusene kommer ud af */
-.welcome.closing .welcome-card::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,#000 0%,#07050b 35%,transparent 75%);animation:cave .2s ease-out forwards}
-@keyframes cave{from{opacity:0;transform:scale(.3)}to{opacity:1;transform:scale(1.4)}}
-@keyframes welcome-in{from{opacity:0}}
-@keyframes welcome-out{to{opacity:0}}
-@keyframes welcome-card-in{from{opacity:0;transform:translateY(14px) scale(.92)}}
-@keyframes welcome-card-out{to{opacity:0;transform:scale(.85)}}
-@keyframes moon-glow{to{text-shadow:0 0 30px color-mix(in srgb,var(--gold) 85%,transparent)}}
+.welcome.closing .welcome-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, #000 0%, #07050b 35%, transparent 75%);
+  animation: cave .2s ease-out forwards
+}
+
+@keyframes cave {
+  from {
+    opacity: 0;
+    transform: scale(.3)
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.4)
+  }
+}
+
+@keyframes welcome-in {
+  from {
+    opacity: 0
+  }
+}
+
+@keyframes welcome-out {
+  to {
+    opacity: 0
+  }
+}
+
+@keyframes welcome-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(.92)
+  }
+}
+
+@keyframes welcome-card-out {
+  to {
+    opacity: 0;
+    transform: scale(.85)
+  }
+}
+
+@keyframes moon-glow {
+  to {
+    text-shadow: 0 0 30px color-mix(in srgb, var(--gold) 85%, transparent)
+  }
+}
+
 /* Sorte flagermus; en svag lilla kant gør dem synlige mod den mørke baggrund */
-.bat{position:fixed;z-index:60;pointer-events:none;color:#08060c;filter:drop-shadow(0 0 1.5px color-mix(in srgb,var(--accent) 70%,transparent))}
-.bat svg{width:100%;height:100%;display:block;overflow:visible}
-.bat .wing{transform-box:view-box;animation:flap var(--flap,.09s) ease-in-out infinite alternate}
-.bat .wing.r{transform-origin:50px 30px}
-.bat .wing.l{transform-origin:50px 30px}
-@keyframes flap{from{scale:1 1}to{scale:1 -.25}}
-@media (prefers-reduced-motion:reduce){.welcome,.welcome-card,.welcome-moon{animation:none}}
+.bat {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  color: #08060c;
+  filter: drop-shadow(0 0 1.5px color-mix(in srgb, var(--accent) 70%, transparent))
+}
+
+.bat svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible
+}
+
+.bat .wing {
+  transform-box: view-box;
+  animation: flap var(--flap, .09s) ease-in-out infinite alternate
+}
+
+.bat .wing.r {
+  transform-origin: 50px 30px
+}
+
+.bat .wing.l {
+  transform-origin: 50px 30px
+}
+
+@keyframes flap {
+  from {
+    scale: 1 1
+  }
+
+  to {
+    scale: 1 -.25
+  }
+}
+
+@media (prefers-reduced-motion:reduce) {
+
+  .welcome,
+  .welcome-card,
+  .welcome-moon {
+    animation: none
+  }
+}
 
 /* Flyt en drik til en anden kategori: knap nederst til venstre på et åbnet kort og en lille popup */
-.foot-acts{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:10px}
-.foot-acts .del{margin-top:0}
-.move-btn{font:inherit;font-size:.84rem;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);border-radius:999px;padding:6px 13px;cursor:pointer}
-.move-btn[aria-expanded="true"]{background:var(--accent);color:var(--surface)}
-.move-pop{position:absolute;left:12px;z-index:20;min-width:210px;max-width:calc(100% - 24px);max-height:60vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;
-  box-shadow:0 14px 34px -10px rgba(0,0,0,.7);transform-origin:0 100%;animation:move-pop-in .18s ease-out}
-.move-pop.below{transform-origin:0 0}
-.move-pop.closing{animation:move-pop-out .16s ease-in forwards}
-.move-title{margin:2px 6px 8px;font-size:.8rem;color:var(--muted)}
-.move-none{margin:4px 6px;font-size:.9rem;color:var(--muted)}
-.move-opt{position:relative;display:block;width:100%;text-align:left;font:inherit;font-weight:600;font-size:.95rem;color:var(--ink);background:none;border:1px solid transparent;border-radius:10px;padding:9px 12px;cursor:pointer}
-.move-opt:hover{background:var(--pine-soft);border-color:var(--line)}
-.item.moving{pointer-events:none}
-.tab.landed{animation:landed .9s ease-out}
-@keyframes move-pop-in{from{opacity:0;transform:translateY(6px) scale(.96)}}
-@keyframes move-pop-out{to{opacity:0;transform:translateY(6px) scale(.96)}}
-@keyframes landed{0%,100%{box-shadow:0 0 0 0 transparent}35%{box-shadow:0 0 0 2px var(--accent),0 0 6px 0 color-mix(in srgb,var(--accent) 65%,transparent);transform:scale(1.06)}}
+.foot-acts {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px
+}
+
+.foot-acts .del {
+  margin-top: 0
+}
+
+.move-btn {
+  font: inherit;
+  font-size: .84rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  border-radius: 999px;
+  padding: 6px 13px;
+  cursor: pointer
+}
+
+.move-btn[aria-expanded="true"] {
+  background: var(--accent);
+  color: var(--surface)
+}
+
+.move-pop {
+  position: absolute;
+  left: 12px;
+  z-index: 20;
+  min-width: 210px;
+  max-width: calc(100% - 24px);
+  max-height: 60vh;
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 14px 34px -10px rgba(0, 0, 0, .7);
+  transform-origin: 0 100%;
+  animation: move-pop-in .18s ease-out
+}
+
+.move-pop.below {
+  transform-origin: 0 0
+}
+
+.move-pop.closing {
+  animation: move-pop-out .16s ease-in forwards
+}
+
+.move-title {
+  margin: 2px 6px 8px;
+  font-size: .8rem;
+  color: var(--muted)
+}
+
+.move-none {
+  margin: 4px 6px;
+  font-size: .9rem;
+  color: var(--muted)
+}
+
+.move-opt {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-weight: 600;
+  font-size: .95rem;
+  color: var(--ink);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 9px 12px;
+  cursor: pointer
+}
+
+.move-opt:hover {
+  background: var(--pine-soft);
+  border-color: var(--line)
+}
+
+.item.moving {
+  pointer-events: none
+}
+
+.tab.landed {
+  animation: landed .9s ease-out
+}
+
+@keyframes move-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(.96)
+  }
+}
+
+@keyframes move-pop-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(.96)
+  }
+}
+
+@keyframes landed {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent
+  }
+
+  35% {
+    box-shadow: 0 0 0 2px var(--accent), 0 0 6px 0 color-mix(in srgb, var(--accent) 65%, transparent);
+    transform: scale(1.06)
+  }
+}
+
 /* Witchy: knappen er en lille gylden besværgelse, og popuppen åbner sig som en lysende cirkel fra knappen
    med en langsomt drejende tryllecirkel i hjørnet (øverst, så den ikke giver en scrollbar). Kategorierne dukker op én efter én. */
-:root[data-vibe="witchy"] .move-btn{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.02rem;font-weight:700;color:var(--gold);background:color-mix(in srgb,var(--accent-soft) 80%,transparent);border-color:color-mix(in srgb,var(--gold) 45%,transparent);box-shadow:0 0 14px -5px color-mix(in srgb,var(--accent) 80%,transparent)}
-:root[data-vibe="witchy"] .move-btn[aria-expanded="true"]{color:var(--menu-ink);background:var(--gold);box-shadow:0 0 16px -2px color-mix(in srgb,var(--gold) 70%,transparent)}
-:root[data-vibe="witchy"] .move-pop{padding:12px 10px 10px;border-color:color-mix(in srgb,var(--accent) 55%,var(--line));
-  background:radial-gradient(circle at 0 100%,color-mix(in srgb,var(--accent) 24%,transparent),transparent 65%),var(--surface);
-  box-shadow:0 0 0 1px color-mix(in srgb,var(--gold) 18%,transparent),0 16px 44px -12px color-mix(in srgb,var(--accent) 80%,transparent),0 0 60px -18px color-mix(in srgb,var(--gold) 45%,transparent);
-  animation:spell-open .55s cubic-bezier(.2,1,.3,1)}
-:root[data-vibe="witchy"] .move-pop.below{background:radial-gradient(circle at 0 0,color-mix(in srgb,var(--accent) 24%,transparent),transparent 65%),var(--surface);animation-name:spell-open-below}
-:root[data-vibe="witchy"] .move-pop.closing{animation:spell-close .2s ease-in forwards}
-:root[data-vibe="witchy"] .move-pop::before{content:"";position:absolute;left:-70px;top:-70px;width:150px;height:150px;border-radius:50%;pointer-events:none;
-  border:1px dashed color-mix(in srgb,var(--gold) 40%,transparent);box-shadow:inset 0 0 0 9px transparent,inset 0 0 0 10px color-mix(in srgb,var(--accent) 30%,transparent);animation:rune-spin 14s linear infinite}
-:root[data-vibe="witchy"] .move-title{position:relative;text-align:center;font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;font-weight:700;font-size:1.15rem;color:var(--accent);margin:0 6px 8px}
-:root[data-vibe="witchy"] .move-title::before{content:"✦ ";color:var(--gold);font-style:normal;font-size:.8em}
-:root[data-vibe="witchy"] .move-title::after{content:" ✦";color:var(--gold);font-style:normal;font-size:.8em}
-:root[data-vibe="witchy"] .move-opt{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700;font-size:1.2rem;line-height:1.2;padding:8px 12px 8px 34px;animation:opt-appear .45s calc(.15s + var(--k,0)*.07s) cubic-bezier(.2,1,.3,1) both;transition:color .2s,background .2s,box-shadow .2s,border-color .2s}
-:root[data-vibe="witchy"] .move-opt::before{content:"✧";position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:.85rem;transition:transform .3s,color .2s}
-:root[data-vibe="witchy"] .move-opt:hover,:root[data-vibe="witchy"] .move-opt:active{color:var(--gold);background:color-mix(in srgb,var(--accent) 16%,transparent);border-color:color-mix(in srgb,var(--gold) 35%,transparent);box-shadow:0 0 14px -4px color-mix(in srgb,var(--accent) 80%,transparent)}
-:root[data-vibe="witchy"] .move-opt:hover::before,:root[data-vibe="witchy"] .move-opt:active::before{color:var(--gold);transform:translateY(-50%) rotate(180deg) scale(1.3)}
-:root[data-vibe="witchy"] .tab.landed{animation:landed-witchy 1.1s ease-out}
-.fx-vortex{border-radius:50%;background:conic-gradient(from 0deg,transparent 0 10%,color-mix(in srgb,var(--accent) 80%,transparent) 25%,transparent 42%,color-mix(in srgb,var(--gold) 65%,transparent) 60%,transparent 75%,color-mix(in srgb,var(--accent) 70%,transparent) 90%,transparent);
-  -webkit-mask:radial-gradient(circle,transparent 0 22%,#000 40%,#000 62%,transparent 71%);mask:radial-gradient(circle,transparent 0 22%,#000 40%,#000 62%,transparent 71%);filter:blur(1.5px)}
-@keyframes spell-open{from{clip-path:circle(0% at 0 100%);filter:brightness(2.2) blur(3px)}70%{filter:brightness(1.15) blur(0)}to{clip-path:circle(160% at 0 100%);filter:none}}
-@keyframes spell-open-below{from{clip-path:circle(0% at 0 0);filter:brightness(2.2) blur(3px)}70%{filter:brightness(1.15) blur(0)}to{clip-path:circle(160% at 0 0);filter:none}}
-@keyframes spell-close{to{opacity:0;transform:scale(.9);filter:blur(4px)}}
-@keyframes rune-spin{to{transform:rotate(360deg)}}
-@keyframes opt-appear{from{opacity:0;transform:translateX(-10px);filter:blur(4px)}}
-@keyframes landed-witchy{0%,100%{box-shadow:0 0 0 0 transparent}30%{transform:scale(1.08);box-shadow:0 0 0 2px var(--gold),0 0 8px 1px color-mix(in srgb,var(--accent) 80%,transparent)}60%{box-shadow:0 0 0 2px var(--accent),0 0 6px 0 color-mix(in srgb,var(--accent) 60%,transparent)}}
-@media (prefers-reduced-motion:reduce){.move-pop,.move-opt,.move-pop::before,.tab.landed{animation:none!important}}
+:root[data-vibe="witchy"] .move-btn {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--gold);
+  background: color-mix(in srgb, var(--accent-soft) 80%, transparent);
+  border-color: color-mix(in srgb, var(--gold) 45%, transparent);
+  box-shadow: 0 0 14px -5px color-mix(in srgb, var(--accent) 80%, transparent)
+}
+
+:root[data-vibe="witchy"] .move-btn[aria-expanded="true"] {
+  color: var(--menu-ink);
+  background: var(--gold);
+  box-shadow: 0 0 16px -2px color-mix(in srgb, var(--gold) 70%, transparent)
+}
+
+:root[data-vibe="witchy"] .move-pop {
+  padding: 12px 10px 10px;
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: radial-gradient(circle at 0 100%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 65%), var(--surface);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--gold) 18%, transparent), 0 16px 44px -12px color-mix(in srgb, var(--accent) 80%, transparent), 0 0 60px -18px color-mix(in srgb, var(--gold) 45%, transparent);
+  animation: spell-open .55s cubic-bezier(.2, 1, .3, 1)
+}
+
+:root[data-vibe="witchy"] .move-pop.below {
+  background: radial-gradient(circle at 0 0, color-mix(in srgb, var(--accent) 24%, transparent), transparent 65%), var(--surface);
+  animation-name: spell-open-below
+}
+
+:root[data-vibe="witchy"] .move-pop.closing {
+  animation: spell-close .2s ease-in forwards
+}
+
+:root[data-vibe="witchy"] .move-pop::before {
+  content: "";
+  position: absolute;
+  left: -70px;
+  top: -70px;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  pointer-events: none;
+  border: 1px dashed color-mix(in srgb, var(--gold) 40%, transparent);
+  box-shadow: inset 0 0 0 9px transparent, inset 0 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
+  animation: rune-spin 14s linear infinite
+}
+
+:root[data-vibe="witchy"] .move-title {
+  position: relative;
+  text-align: center;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--accent);
+  margin: 0 6px 8px
+}
+
+:root[data-vibe="witchy"] .move-title::before {
+  content: "✦ ";
+  color: var(--gold);
+  font-style: normal;
+  font-size: .8em
+}
+
+:root[data-vibe="witchy"] .move-title::after {
+  content: " ✦";
+  color: var(--gold);
+  font-style: normal;
+  font-size: .8em
+}
+
+:root[data-vibe="witchy"] .move-opt {
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  line-height: 1.2;
+  padding: 8px 12px 8px 34px;
+  animation: opt-appear .45s calc(.15s + var(--k, 0)*.07s) cubic-bezier(.2, 1, .3, 1) both;
+  transition: color .2s, background .2s, box-shadow .2s, border-color .2s
+}
+
+:root[data-vibe="witchy"] .move-opt::before {
+  content: "✧";
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent);
+  font-size: .85rem;
+  transition: transform .3s, color .2s
+}
+
+:root[data-vibe="witchy"] .move-opt:hover,
+:root[data-vibe="witchy"] .move-opt:active {
+  color: var(--gold);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--gold) 35%, transparent);
+  box-shadow: 0 0 14px -4px color-mix(in srgb, var(--accent) 80%, transparent)
+}
+
+:root[data-vibe="witchy"] .move-opt:hover::before,
+:root[data-vibe="witchy"] .move-opt:active::before {
+  color: var(--gold);
+  transform: translateY(-50%) rotate(180deg) scale(1.3)
+}
+
+:root[data-vibe="witchy"] .tab.landed {
+  animation: landed-witchy 1.1s ease-out
+}
+
+.fx-vortex {
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 10%, color-mix(in srgb, var(--accent) 80%, transparent) 25%, transparent 42%, color-mix(in srgb, var(--gold) 65%, transparent) 60%, transparent 75%, color-mix(in srgb, var(--accent) 70%, transparent) 90%, transparent);
+  -webkit-mask: radial-gradient(circle, transparent 0 22%, #000 40%, #000 62%, transparent 71%);
+  mask: radial-gradient(circle, transparent 0 22%, #000 40%, #000 62%, transparent 71%);
+  filter: blur(1.5px)
+}
+
+@keyframes spell-open {
+  from {
+    clip-path: circle(0% at 0 100%);
+    filter: brightness(2.2) blur(3px)
+  }
+
+  70% {
+    filter: brightness(1.15) blur(0)
+  }
+
+  to {
+    clip-path: circle(160% at 0 100%);
+    filter: none
+  }
+}
+
+@keyframes spell-open-below {
+  from {
+    clip-path: circle(0% at 0 0);
+    filter: brightness(2.2) blur(3px)
+  }
+
+  70% {
+    filter: brightness(1.15) blur(0)
+  }
+
+  to {
+    clip-path: circle(160% at 0 0);
+    filter: none
+  }
+}
+
+@keyframes spell-close {
+  to {
+    opacity: 0;
+    transform: scale(.9);
+    filter: blur(4px)
+  }
+}
+
+@keyframes rune-spin {
+  to {
+    transform: rotate(360deg)
+  }
+}
+
+@keyframes opt-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+    filter: blur(4px)
+  }
+}
+
+@keyframes landed-witchy {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 transparent
+  }
+
+  30% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 2px var(--gold), 0 0 8px 1px color-mix(in srgb, var(--accent) 80%, transparent)
+  }
+
+  60% {
+    box-shadow: 0 0 0 2px var(--accent), 0 0 6px 0 color-mix(in srgb, var(--accent) 60%, transparent)
+  }
+}
+
+@media (prefers-reduced-motion:reduce) {
+
+  .move-pop,
+  .move-opt,
+  .move-pop::before,
+  .tab.landed {
+    animation: none !important
+  }
+}
