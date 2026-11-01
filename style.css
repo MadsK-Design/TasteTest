@@ -1271,10 +1271,9 @@ input.item-edit {
   outline-offset: 0
 }
 
-/* Witchy: noterne står med blæk i heksebogen, i lavendel med et svagt skær */
+/* Witchy: noterne står med blæk i heksebogen, i lavendel med et svagt skær (ikke kursiv, så de er lette at læse) */
 :root[data-vibe="witchy"] .note {
   font-family: "Cormorant Garamond", Georgia, serif;
-  font-style: italic;
   font-weight: 700;
   font-size: 1.1rem;
   line-height: 1.3;
