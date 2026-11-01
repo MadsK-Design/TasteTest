@@ -1286,6 +1286,14 @@ input.item-edit {
   outline-color: var(--accent)
 }
 
+/* Tomme notefelter træder i baggrunden, så de udfyldte er dem, man lægger mærke til */
+.note:placeholder-shown:not(:focus),
+:root[data-vibe="witchy"] .note:placeholder-shown:not(:focus) {
+  background: var(--bg);
+  border-left-color: var(--line);
+  box-shadow: none
+}
+
 .del {
   border: 0;
   background: none;
