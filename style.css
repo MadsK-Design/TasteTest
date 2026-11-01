@@ -504,6 +504,55 @@ h1 .h1-emoji {
   margin: 0 0 26px
 }
 
+/* "Afbryd forbindelse" lige under "Synkroniseret …"; vises kun, når der er skrevet en kode */
+.del.afbryd {
+  display: block;
+  margin: -22px 0 26px
+}
+
+.del.afbryd[hidden] {
+  display: none
+}
+
+/* Gæstevisning: kun standard mode, ingen knapper til at ændre noget, og en tekst til familien */
+.gaest-lede {
+  display: none
+}
+
+.gaest .gaest-lede {
+  display: block
+}
+
+.gaest .lede.std,
+.gaest .lede.witch,
+.gaest .vibe,
+.gaest .egg,
+.gaest .egg-hint,
+.gaest .filters {
+  display: none
+}
+
+.gaest-item .heart {
+  cursor: default
+}
+
+.gaest-note {
+  white-space: pre-line;
+  margin: 10px 0 0;
+  font-size: .9rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px
+}
+
+.gaest-note::before {
+  content: "Noter: ";
+  font-weight: 600;
+  color: var(--muted)
+}
+
 /* Menu: the current winners */
 .menu {
   background: var(--pine);

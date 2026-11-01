@@ -55,12 +55,21 @@ let deleting = false; // "Slet" er slået til, og et tryk på en fane sletter ka
 let editItem = null; // id på den drik, hvis navn og "Sådan" rettes lige nu
 const NY = "ny-kategori"; // fanen, hvor man opretter en ny kategori
 
+// ===== Gæstevisning =====
+// Med gæstekoden ser familien en skrivebeskyttet kopi af listen: kun smagte drikke, i standard mode.
+// Kopien ligger i Firebase under gaester/{gæstekode} og skrives automatisk af jeres egne telefoner.
+// Gæstekoden er ikke hemmelig på samme måde som jeres kode: den giver kun adgang til at se kopien.
+const GAEST_KODE = "Familie";
+let gaest = false;                             // siden vises som gæst
+let gaestData = {drikke:[], kategorier:[]};    // gæstekopien, som den er hentet
+
 const $ = s => document.querySelector(s);
 // De faste kategoriers navne kan ændres; de nye navne gemmes i state.navne[id],
 // og nye beskrivelser i state.navne["sub:"+id] (så Firestore-reglerne ikke skal ændres).
 // Slettede faste kategorier står i state.kategorier som {id, skjult:true}.
 // Den rækkefølge, man har trukket fanerne i, står i state.navne._order som "id1,id2,…".
 const allCats = () => {
+  if(gaest) return gaestData.kategorier.filter(c=>gaestData.drikke.some(d=>d.cat===c.id)); // kun kategorier med smagte drikke
   const k = state.kategorier || [];
   const n = state.navne || {};
   const skjult = id => k.some(x=>x.id===id && x.skjult);
@@ -74,7 +83,7 @@ const allCats = () => {
 // Faste drikke, der er fjernet, markeres med removed:true i entries (så Firestore-reglerne ikke skal ændres).
 // Rettet navn og "Sådan" på faste drikke gemmes også i entries[id] som name/how,
 // og er drikken flyttet til en anden kategori, står den nye kategori i entries[id].cat.
-const allItems = () => ITEMS.filter(i=>!entry(i.id).removed)
+const allItems = () => gaest ? gaestData.drikke : ITEMS.filter(i=>!entry(i.id).removed)
   .map(i=>{ const e = entry(i.id); return Object.assign({}, i, "name" in e ? {name:e.name} : {}, "how" in e ? {how:e.how} : {}, "cat" in e ? {cat:e.cat} : {}); })
   .concat(state.custom || []);
 
@@ -105,6 +114,7 @@ function saveLocal(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); 
 
 let writing = Promise.resolve(), pending = false, timer = null;
 function persist(delay=0){
+  if(gaest) return; // gæster kan ikke ændre noget
   saveLocal();
   if(!docRef) return;
   clearTimeout(timer);
@@ -112,7 +122,7 @@ function persist(delay=0){
     if(pending){ persist(300); return; } // en gemning er i gang; prøv igen lidt senere, så ændringen ikke går tabt
     pending = true;
     writing = writing.then(()=>setDoc(docRef, {entries:state.entries, custom:state.custom, kategorier:state.kategorier||[], navne:state.navne||{}}))
-      .then(()=>setSync("Gemt, og synkroniseret mellem jeres telefoner."))
+      .then(()=>{ setSync("Gemt, og synkroniseret mellem jeres telefoner."); publishGuest(); })
       .catch(e=>setSync(e && e.code==="permission-denied" ? "Databasen afviste gemningen. Tjek koden og reglerne i Firebase." : "Kunne ikke gemme online lige nu. Gemt på denne enhed."))
       .finally(()=>{pending=false;});
   }, delay);
@@ -665,7 +675,7 @@ function renderTabs(){
   if(arrange.dragEl) return; // en fane er ved at blive trukket
   nav.innerHTML = "";
   nav.classList.toggle("arranging", arrange.on);
-  if(!editing && !deleting){
+  if(!editing && !deleting && !gaest){
     const ny = document.createElement("button");
     ny.className = "tab ny"; ny.type = "button";
     ny.setAttribute("aria-pressed", current===NY);
@@ -702,12 +712,12 @@ function renderTabs(){
     b.setAttribute("aria-pressed", c.id===current);
     b.innerHTML = "";
     b.append(c.label);
-    const n = document.createElement("span"); n.className="n"; n.textContent = tried+"/"+items.length;
+    const n = document.createElement("span"); n.className="n"; n.textContent = gaest ? items.length : tried+"/"+items.length;
     b.append(n);
     b.onclick = ()=>{ if(arrange.on) return; current = c.id; if(location.hash!=="#"+c.id) history.replaceState(null,"","#"+c.id); render(); };
     nav.append(b);
   });
-  if(!deleting){
+  if(!deleting && !gaest){
     const red = document.createElement("button");
     red.className = "tab rediger"; red.type = "button";
     red.setAttribute("aria-pressed", editing);
@@ -715,7 +725,7 @@ function renderTabs(){
     red.onclick = ()=>{ editing = !editing; render(); };
     nav.append(red);
   }
-  if(!editing){
+  if(!editing && !gaest){
     const sl = document.createElement("button");
     sl.className = "tab rediger"; sl.type = "button";
     sl.setAttribute("aria-pressed", deleting);
@@ -766,6 +776,7 @@ function renderList(){
   const active = document.activeElement;
   if(active && ["note","sub-edit","item-edit"].some(c=>active.classList.contains(c))) return; // don't wipe text being typed
   main.innerHTML = "";
+  if(gaest) return renderGuestList(main);
   if(current===NY){ renderNewCat(main); return; }
   const cat = allCats().find(c=>c.id===current) || allCats()[0];
   if(!cat){ current = NY; renderNewCat(main); return; }
@@ -929,7 +940,71 @@ function renderList(){
   }
 }
 
-function render(){ renderTabs(); renderMenu(); renderList(); }
+function render(){
+  if(gaest && !allCats().some(c=>c.id===current)) current = allCats().length ? allCats()[0].id : null; // gæster har ingen "Ny kategori"
+  renderTabs(); renderMenu(); renderList();
+}
+
+// Gæstevisningen: de smagte drikke i den valgte kategori, bedst først. Intet kan ændres.
+function renderGuestList(main){
+  const cats = allCats();
+  if(!cats.some(c=>c.id===current)) current = cats.length ? cats[0].id : null;
+  const cat = cats.find(c=>c.id===current);
+  if(!cat){
+    const p = document.createElement("p"); p.className = "empty-state";
+    p.textContent = "Der er ikke smagt noget endnu. Kig forbi igen senere.";
+    main.append(p);
+    return;
+  }
+  const head = document.createElement("div"); head.className = "cat-head";
+  const h = document.createElement("h2"); h.textContent = cat.label;
+  const sub = document.createElement("p"); sub.textContent = cat.sub || "";
+  head.append(h, sub);
+  main.append(head);
+  const byId = new Map(allItems().map(i=>[i.id, i]));
+  displayIds(current).map(id=>byId.get(id)).forEach(i=>{
+    const e = entry(i.id);
+    const card = document.createElement("article"); card.className = "item tried gaest-item"; card.dataset.id = i.id;
+    const body = document.createElement("div"); body.className = "body";
+    const n = document.createElement("p"); n.className = "name"; n.textContent = i.name; body.append(n);
+    if(i.desc){ const d = document.createElement("p"); d.className = "desc"; d.textContent = i.desc; body.append(d); }
+    if(i.how){ const hw = document.createElement("p"); hw.className = "how"; hw.textContent = "Sådan: " + i.how; body.append(hw); }
+    const rate = document.createElement("div"); rate.className = "rate";
+    rate.setAttribute("role", "img"); rate.setAttribute("aria-label", "Silkes vurdering: " + e.rating + " af 10");
+    const lbl = document.createElement("span"); lbl.className = "lbl"; lbl.textContent = "Silkes vurdering"; lbl.setAttribute("aria-hidden", "true");
+    rate.append(lbl);
+    for(let k=1; k<=10; k++){
+      const hs = document.createElement("span"); hs.className = "heart" + (e.rating >= k ? " on" : ""); hs.setAttribute("aria-hidden", "true");
+      hs.innerHTML = heartSvg();
+      rate.append(hs);
+    }
+    card.append(body, rate);
+    if(e.note){ const nt = document.createElement("p"); nt.className = "gaest-note"; nt.textContent = e.note; card.append(nt); }
+    main.append(card);
+  });
+}
+
+// Jeres telefoner skriver gæstekopien: de smagte drikke med navn, beskrivelse, "Sådan", vurdering og noter.
+// Den skrives, hver gang I gemmer noget, og én gang, når siden åbnes (så en ødelagt kopi bliver rettet igen).
+let lastGuest = "";
+function guestCopy(){
+  const kategorier = allCats().map(c=>({id:c.id, label:c.label, sub:c.sub || ""}));
+  const drikke = allItems().filter(i=>isTried(i.id)).map(i=>{
+    const e = entry(i.id), d = {id:i.id, cat:i.cat, name:i.name, rating:e.rating};
+    if(i.desc) d.desc = i.desc;
+    if(i.how) d.how = i.how;
+    if(e.note) d.note = e.note;
+    return d;
+  });
+  return {kategorier, drikke};
+}
+function publishGuest(){
+  if(gaest || !db || !docRef) return;
+  const data = guestCopy(), json = JSON.stringify(data);
+  if(json === lastGuest) return; // intet nyt for gæsterne
+  lastGuest = json;
+  setDoc(doc(db, "gaester", GAEST_KODE), data).catch(()=>{ lastGuest = ""; }); // f.eks. hvis reglerne mangler; prøv igen næste gang
+}
 
 // ===== Flyt en drik til en anden kategori =====
 // Knappen findes på et kort, der er åbnet ved at holde nede. Den åbner en lille liste med de andre kategorier.
@@ -1181,7 +1256,7 @@ function onTapOutside(isActive, isInside, onTap){
   let timer = null, start = null, swallow = false;
   list.addEventListener("pointerdown", e=>{
     const card = e.target.closest(".item[data-id]");
-    if(!card || card.dataset.id===editItem || e.target.closest("button, input, textarea, a")) return;
+    if(gaest || !card || card.dataset.id===editItem || e.target.closest("button, input, textarea, a")) return;
     start = {x:e.clientX, y:e.clientY};
     clearTimeout(timer);
     timer = setTimeout(()=>{
@@ -1272,7 +1347,7 @@ const arrange = {on:false, timer:null, start:null, dragEl:null, startX:0, lastX:
 
   nav.addEventListener("pointerdown", e=>{
     const tab = e.target.closest(".tab.cat");
-    if(!tab || editing || deleting) return;
+    if(!tab || editing || deleting || gaest) return;
     arrange.start = {x:e.clientX, y:e.clientY}; arrange.lastX = e.clientX;
     clearTimeout(arrange.timer);
     const id = e.pointerId;
@@ -1420,6 +1495,7 @@ function setKode(k){ try{ k ? localStorage.setItem(KODE_KEY, k) : localStorage.r
 function askKode(msg){
   setSync(msg);
   $("#kode-form").hidden = false;
+  $("#afbryd").hidden = true;
 }
 $("#kode-form").onsubmit = ev=>{
   ev.preventDefault();
@@ -1435,6 +1511,8 @@ function connect(kode){
     if(!db) db = getFirestore(initializeApp(firebaseConfig));
     if(unsubscribe) unsubscribe();
     setSync("Forbinder…");
+    $("#afbryd").hidden = false;
+    if(kode === GAEST_KODE) return connectGuest(kode);
     docRef = doc(db, "lister", kode);
     let first = true;
     unsubscribe = onSnapshot(docRef, snap=>{
@@ -1447,6 +1525,7 @@ function connect(kode){
         if(first) order = {}; // første gang de rigtige data kommer, sorteres listerne på ny
         saveLocal();
         render();
+        if(first) publishGuest();
       } else if(first && (Object.keys(state.entries||{}).length || (state.custom||[]).length)){
         persist();
       }
@@ -1463,6 +1542,49 @@ function connect(kode){
     askKode("Forkert kode. Prøv igen.");
   }
 }
+
+// Gæster ser altid standard mode og kan ikke ændre noget. Kopien opdateres live, når I vurderer noget.
+function connectGuest(kode){
+  gaest = true;
+  document.documentElement.classList.add("gaest");
+  if(isWitchy()){ delete document.documentElement.dataset.vibe; applyVibe(); } // gemmes ikke; kun for denne visning
+  docRef = null; editing = deleting = false; editItem = null;
+  state = {entries:{}, custom:[], kategorier:[], navne:{}};
+  render();
+  unsubscribe = onSnapshot(doc(db, "gaester", kode), snap=>{
+    const d = (snap.exists() && snap.data()) || {};
+    gaestData = {drikke: d.drikke || [], kategorier: d.kategorier || []};
+    state.entries = Object.fromEntries(gaestData.drikke.map(x=>[x.id, {rating:x.rating, note:x.note || ""}]));
+    order = {}; // altid bedst først
+    render();
+    setSync("Gæstevisning: her kan du se, hvad vi er glade for lige nu.");
+  }, err=>{
+    disconnect();
+    askKode(err && err.code==="permission-denied" ? "Forkert kode. Prøv igen." : "Kunne ikke hente listen lige nu. Prøv igen.");
+  });
+}
+
+// "Afbryd forbindelse": telefonen glemmer koden og listen, så man kan skrive en ny kode.
+// I witchy mode går siden først tilbage til standard med den samme forvandling som knappen øverst.
+function disconnect(){
+  if(unsubscribe){ unsubscribe(); unsubscribe = null; }
+  clearTimeout(timer); // en gemning, der venter, skal ikke ud til en liste, man har forladt
+  docRef = null; setKode(null);
+  gaest = false; document.documentElement.classList.remove("gaest");
+  gaestData = {drikke:[], kategorier:[]}; lastGuest = "";
+  state = {entries:{}, custom:[], kategorier:[], navne:{}};
+  try{ localStorage.removeItem(LS_KEY); }catch(e){}
+  order = {}; editing = deleting = false; editItem = null;
+  current = allCats()[0].id; history.replaceState(null, "", location.pathname + location.search);
+  $("#kode-input").value = "";
+  render();
+  askKode("Forbindelsen er afbrudt. Skriv en kode for at åbne en liste.");
+}
+$("#afbryd").onclick = ()=>{
+  if(!isWitchy()) return disconnect();
+  $("#vibe").click();
+  setTimeout(disconnect, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : SPELL_MS + 100);
+};
 
 (()=>{
   if(firebaseConfig.apiKey === "INDSÆT-HER"){ setSync("Firebase er ikke sat op endnu. Gemmes kun på denne enhed."); return; }

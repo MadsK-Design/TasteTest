@@ -21,9 +21,16 @@ service cloud.firestore {
       allow create, update: if kode == "DIN-HEMMELIGE-KODE"
         && request.resource.data.keys().hasOnly(['entries', 'custom', 'kategorier', 'navne']);
     }
+    match /gaester/{kode} {
+      allow get: if kode == "DIN-GÆSTEKODE";
+      allow create, update: if kode == "DIN-GÆSTEKODE"
+        && request.resource.data.keys().hasOnly(['kategorier', 'drikke']);
+    }
   }
 }
 ```
+
+`DIN-GÆSTEKODE` skal være den samme som `GAEST_KODE` øverst i `app.js` (se Del 4).
 
 8. Klik **Udgiv** (Publish).
 
@@ -45,6 +52,15 @@ Vil du slippe for at skrive den, kan du sende linket med koden til sidst én gan
 Vælg **Føj til hjemmeskærm** i browserens menu (Del-knappen i Safari, de tre prikker i Chrome). Så ligger den som en app.
 
 Står der "Synkroniseret mellem jeres telefoner" under overskriften, virker det.
+
+## Del 4: Gæstevisning til familien
+
+Med gæstekoden kan familien se de drikke, der er smagt, med vurdering, noter og "Sådan", men ikke ændre noget. De ser altid standard mode og kun det, der har fået en vurdering.
+
+- Gæstekoden står i `app.js` som `GAEST_KODE` og i Firebase-reglerne under `gaester` (se Del 1). De to skal være ens.
+- Jeres telefoner opdaterer gæstekopien automatisk, hver gang I gemmer noget, og hver gang én af jer åbner siden.
+- Familien åbner bare adressen og skriver gæstekoden i feltet.
+- **Afbryd forbindelse** under "Synkroniseret …" får telefonen til at glemme koden, så man kan skrive en ny.
 
 ## Hvis noget driller
 
