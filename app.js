@@ -1496,6 +1496,13 @@ function askKode(msg){
   setSync(msg);
   $("#kode-form").hidden = false;
   $("#afbryd").hidden = true;
+  // Uden en kode er der ingen witchy mode: knappen skjules, og står siden i witchy, skifter den til standard
+  document.documentElement.classList.add("uden-kode");
+  if(isWitchy()){
+    delete document.documentElement.dataset.vibe;
+    try{ localStorage.setItem(VIBE_KEY, "std"); }catch(e){}
+    applyVibe(); render();
+  }
 }
 $("#kode-form").onsubmit = ev=>{
   ev.preventDefault();
@@ -1512,6 +1519,7 @@ function connect(kode){
     if(unsubscribe) unsubscribe();
     setSync("Forbinder…");
     $("#afbryd").hidden = false;
+    document.documentElement.classList.remove("uden-kode");
     if(kode === GAEST_KODE) return connectGuest(kode);
     docRef = doc(db, "lister", kode);
     let first = true;

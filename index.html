@@ -13,7 +13,12 @@
   // Hent altid den nyeste style.css og app.js, så en opdatering ses med det samme
   window.V = Date.now();
   // Witchy mode huskes på enheden og sættes før siden tegnes, så den ikke blinker
-  try{ if(localStorage.getItem("smagsproever-vibe")==="witchy") document.documentElement.dataset.vibe = "witchy"; }catch(e){}
+  // Uden en kode er der ingen witchy mode (siden skjuler også knappen, så den ikke blinker frem)
+  try{
+    var harKode = localStorage.getItem("smagsproever-kode") || /[?&]kode=/.test(location.search);
+    if(!harKode) document.documentElement.classList.add("uden-kode");
+    else if(localStorage.getItem("smagsproever-vibe")==="witchy") document.documentElement.dataset.vibe = "witchy";
+  }catch(e){}
   document.write('<link rel="stylesheet" href="style.css?v=' + V + '">');
 </script>
 <noscript><link rel="stylesheet" href="style.css"></noscript>
