@@ -1492,7 +1492,19 @@ const KODE_KEY = "smagsproever-kode";
 function getKode(){ try{ return localStorage.getItem(KODE_KEY); }catch(e){ return null; } }
 function setKode(k){ try{ k ? localStorage.setItem(KODE_KEY, k) : localStorage.removeItem(KODE_KEY); }catch(e){} }
 
+// App-ikonet skifter med koden, så det rigtige ikon kommer med, når siden lægges på hjemmeskærmen.
+// Siden sætter det også selv ved indlæsning (i index.html). Uden en kode fjernes det.
+function appIkon(kode){
+  document.querySelectorAll('link[rel="manifest"], link[rel="apple-touch-icon"]').forEach(l=>l.remove());
+  if(!kode) return;
+  const ikon = kode===GAEST_KODE ? "familie" : "vores";
+  const manifest = document.createElement("link"); manifest.rel = "manifest"; manifest.href = "manifest-" + ikon + ".json";
+  const apple = document.createElement("link"); apple.rel = "apple-touch-icon"; apple.href = "icons/" + ikon + "/apple-touch-icon.png";
+  document.head.append(manifest, apple);
+}
+
 function askKode(msg){
+  appIkon(null);
   setSync(msg);
   $("#kode-form").hidden = false;
   $("#afbryd").hidden = true;
@@ -1520,6 +1532,7 @@ function connect(kode){
     setSync("Forbinder…");
     $("#afbryd").hidden = false;
     document.documentElement.classList.remove("uden-kode");
+    appIkon(kode);
     if(kode === GAEST_KODE) return connectGuest(kode);
     docRef = doc(db, "lister", kode);
     let first = true;

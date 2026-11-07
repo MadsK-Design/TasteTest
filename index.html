@@ -7,6 +7,10 @@
 <link rel="icon" id="favicon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥂</text></svg>">
 <title>Silkes bar</title>
 <meta name="apple-mobile-web-app-title" content="Silkes bar">
+<!-- Kan lægges på hjemmeskærmen som en app. Ikonet vælges efter koden (se scriptet nedenfor) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gloock&family=Cormorant+Garamond:wght@500;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -16,9 +20,16 @@
   // Witchy mode huskes på enheden og sættes før siden tegnes, så den ikke blinker
   // Uden en kode er der ingen witchy mode (siden skjuler også knappen, så den ikke blinker frem)
   try{
-    var harKode = localStorage.getItem("smagsproever-kode") || /[?&]kode=/.test(location.search);
-    if(!harKode) document.documentElement.classList.add("uden-kode");
+    var kode = localStorage.getItem("smagsproever-kode") || new URLSearchParams(location.search).get("kode");
+    if(!kode) document.documentElement.classList.add("uden-kode");
     else if(localStorage.getItem("smagsproever-vibe")==="witchy") document.documentElement.dataset.vibe = "witchy";
+    // App-ikonet: familien får det gyldne, I får det witchy. Uden en kode er der intet ikon,
+    // så siden først kan lægges på hjemmeskærmen, når koden er skrevet
+    if(kode){
+      var ikon = kode==="Familie" ? "familie" : "vores";
+      document.write('<link rel="manifest" href="manifest-' + ikon + '.json">' +
+                     '<link rel="apple-touch-icon" href="icons/' + ikon + '/apple-touch-icon.png">');
+    }
   }catch(e){}
   document.write('<link rel="stylesheet" href="style.css?v=' + V + '">');
 </script>
