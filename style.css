@@ -533,6 +533,16 @@ h1 .h1-emoji {
   display: block
 }
 
+/* Forsiden før koden er skrevet: kun teksten om koden */
+.forside-lede {
+  display: none
+}
+
+.uden-kode .forside-lede {
+  display: block
+}
+
+.uden-kode .lede.std,
 .gaest .lede.std,
 .gaest .lede.witch,
 .gaest .vibe,
